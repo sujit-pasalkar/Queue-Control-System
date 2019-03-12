@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "684142972155",
+    "firebase_url": "https://queuecontrol-d7cab.firebaseio.com",
+    "project_id": "queuecontrol-d7cab",
+    "storage_bucket": "queuecontrol-d7cab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684142972155:android:4020804b65861515",
+        "android_client_info": {
+          "package_name": "com.example.queuecontrol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "684142972155-pnjbq10vc9cqkna7inuqnjkogiv402ol.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.queuecontrol",
+            "certificate_hash": "758bd358772f972e5c1efd3a44f52c70b202a17e"
+          }
+        },
+        {
+          "client_id": "684142972155-ne3ak8ebmg2ocmqecvrer06c2f1g91q4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqnKSsd5IF4HAEL58cjEBpsIZgI2Ov29k"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "684142972155-ne3ak8ebmg2ocmqecvrer06c2f1g91q4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
