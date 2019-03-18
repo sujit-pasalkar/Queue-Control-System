@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:queue_control/Home/homePage.dart';
-import 'package:queue_control/home.dart';
+import 'package:queue_control/SharedPref/SharedPref.dart';
+import '../Home/dummyHome.dart';
+// import '../Verification/verification.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -45,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> verifyPhone(_scaffoldKey) async {
+  Future<void> verifyPhone(_scaffoldKey,String loginType) async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       this.verificationId = verId;
       print('**in -> 1.AutoRetrivalTimeOut**' + verId);
@@ -59,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         this.loadingMsg = "";
       });
 
-      smsCodeDialog(_scaffoldKey).then((value) {
+      smsCodeDialog(_scaffoldKey,loginType).then((value) {
         print('** Done clicked **');
       });
     };
@@ -75,8 +73,9 @@ class _LoginPageState extends State<LoginPage> {
       final snackBar = SnackBar(
         content: Text("Phone Number verified Successfully."),
       );
+      // Navigator.of(context).pop();
       _scaffoldKey.currentState.showSnackBar(snackBar);
-      register();
+      register(loginType);
     };
 
     final PhoneVerificationFailed veriFailed = (AuthException exception) {
@@ -102,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
         verificationFailed: veriFailed);
   }
 
-  smsCodeDialog(_scaffoldKey) {
+  smsCodeDialog(_scaffoldKey,String loginType) {
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -126,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('Resend'),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  verifyPhone(_scaffoldKey);
+                  verifyPhone(_scaffoldKey,loginType);
                 },
               ),
               new FlatButton(
@@ -135,13 +134,13 @@ class _LoginPageState extends State<LoginPage> {
                   print(this.smsCode.length);
                   if (this.smsCode.length == 6) {
                     FirebaseAuth.instance.currentUser().then((user) {
-                      print('user ${user}');
+                      print('user $user');
                       if (user != null) {
-                        register();
-                        print('user:${user}');
+                        register(loginType);
+                        print('user:$user');
                         print("phone" + this.phoneNo);
                       } else {
-                        signIn(this.smsCode);
+                        signIn(this.smsCode,loginType);
                       }
                     });
                   } else {
@@ -201,25 +200,29 @@ class _LoginPageState extends State<LoginPage> {
     //     });
   }
 
-  Future<void> register() async {
-    print('in register');
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.setString('userPhone', this.phoneNo);
-      print('phone after set reg ${this.phoneNo}');
-    });
+  Future<void> register(String loginType) async {
+    print('in register: $loginType');
+    pref.setPhone(this.phoneNo);
+    pref.setLoginType(loginType);
+    print('register success');
     Navigator.of(context).pushReplacementNamed('/home');
+    // Navigator.pushReplacement(
+    //           context,
+    //           MaterialPageRoute(
+    //             builder: (context) => DummyHome(),
+    //           ),
+    //         );
   }
 
-  signIn(smscode) {
+  signIn(smscode,String loginType) {
     print('in sign in..$verificationId / $smsCode');
     try {
       FirebaseAuth.instance
           .signInWithPhoneNumber(
-              verificationId: verificationId, smsCode: smsCode) 
+              verificationId: verificationId, smsCode: smsCode)
           .then((user) {
         print("signed User : $user");
-        this.register();
+        this.register(loginType);
       }, onError: (e) {
         print('....$e');
         setState(() {
@@ -234,18 +237,21 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       //no use
       final snackBar = SnackBar(
-          content: Text("$e"),
-        );
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-        Navigator.of(context).pop();
+        content: Text("$e"),
+      );
+      _scaffoldKey.currentState.showSnackBar(snackBar);
+      Navigator.of(context).pop();
     }
   }
 
-  phoneConfirmAlert(_scaffoldKey) {
+  phoneConfirmAlert(_scaffoldKey,String loginType) {
     if (formKey.currentState.validate()) {
       if (this._country_code == null) {
         final snackBar = SnackBar(content: Text("Select country code!"));
         _scaffoldKey.currentState.showSnackBar(snackBar);
+        // setState(() {
+        //   loginType = '';
+        // });
       } else {
         setState(() {
           this.loading = true;
@@ -253,10 +259,10 @@ class _LoginPageState extends State<LoginPage> {
           this.loadingMsg = "Verifying Your Number";
         });
         formKey.currentState.save();
-        verifyPhone(_scaffoldKey);
+        verifyPhone(_scaffoldKey,loginType);
       }
     } else
-      print("invalid form");
+      print("invalid form");  
   }
 
   @override
@@ -348,9 +354,6 @@ class _LoginPageState extends State<LoginPage> {
                                     setState(() {
                                       verifybtn = true;
                                       this.phoneNo = input;
-                                      // phoneConfirmAlert(
-                                      //   _scaffoldKey,
-                                      // );
                                     });
                                   } else {
                                     setState(() {
@@ -373,12 +376,12 @@ class _LoginPageState extends State<LoginPage> {
             ],
           )),
           Container(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 30),
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
             child: SizedBox(
               height: 50.0,
               child: RaisedButton(
                 child: Text(
-                  'Verify',
+                  'Verify as a user',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
                 splashColor: Colors.green,
@@ -388,14 +391,43 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: !verifybtn
                     ? null
                     : () {
+                        // setState(() {
+                        //   loginType = 'user';
+                        // });
                         print('${this._country_code}-${this.phoneNo}');
                         phoneConfirmAlert(
-                          _scaffoldKey,
+                          _scaffoldKey,'users'
                         );
                       },
               ),
             ),
           ),
+          verifybtn
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () {
+                        // setState(() {
+                        //   loginType = 'vendor';
+                        // });
+                        phoneConfirmAlert(
+                          _scaffoldKey,'vendors'
+                        );
+                      },
+                      child: Text('verify as a vendor',
+                          style: TextStyle(color: Colors.indigo[900])),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 30),
+                    )
+                  ],
+                )
+              : SizedBox(
+                  height: 0,
+                  width: 0,
+                )
         ],
       );
     } else {
@@ -404,7 +436,7 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           CircularProgressIndicator(
-              // valueColor: new AlwaysStoppedAnimation<Color>(Color(0xffb00bae3)),
+              
               ),
           Padding(
             padding: EdgeInsets.all(5),

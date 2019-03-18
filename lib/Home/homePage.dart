@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Select/select.dart';
+import '../SharedPref/SharedPref.dart';
+import '../Home/dummyHome.dart';
 
 class HomePage extends StatefulWidget {
   final ScrollController hideButtonController;
@@ -92,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  SelectPage(selectName: 'bank')));
+                                  SelectPage(selectName: doc.documentID.toString())));
                     },
                     child: Container(
                       height: 115.0,
@@ -123,13 +124,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   clearSharedPref() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
+    pref.clearUser();
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // prefs.clear();
   }
 
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
-      logout();
+      Navigator.of(context).pushNamed('/dummyHome');//
+      // logout();
     }
   }
 
@@ -150,10 +153,10 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              Text(doc["name"],
+              Text(doc.documentID.toString().toUpperCase(),
                   style: TextStyle(color: Colors.white, fontSize: 20)
                   ),
-              Text('widget.dog.location',
+              Text('Tap to open nearby',
                   style: TextStyle(color: Colors.white, fontSize: 15)),
               Row(
                 children: <Widget>[
@@ -161,7 +164,7 @@ class _HomePageState extends State<HomePage> {
                     Icons.star,
                     color: Colors.white,
                   ),
-                  Text(' :8/10',
+                  Text('count of collection',
                       style: TextStyle(color: Colors.white, fontSize: 15))
                 ],
               )

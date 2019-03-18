@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'Home/homePage.dart';
 import 'home.dart';
+import 'Home/dummyHome.dart';
 import 'Login/loginPage.dart';
-// import 'Profile/profilePage.dart';
-// import 'PrivacyPage/privacyPolicy.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-// import 'dart:io';
 import 'package:connectivity/connectivity.dart';
+import 'SharedPref/SharedPref.dart';
 
 void main() => runApp(new MyApp());
 
@@ -35,10 +31,9 @@ class MyApp extends StatelessWidget {
         ),
         routes: <String, WidgetBuilder>{
           '/loginpage': (BuildContext context) => LoginPage(),
-          // '/homepage': (BuildContext context) => HomePage(),
           '/home': (BuildContext context) => Home(),
+          '/dummyHome': (BuildContext context) => DummyHome(),
 
-          // '/mainpage': (BuildContext context) => MainPage(),
         });
   }
 }
@@ -117,6 +112,8 @@ class _MainPageState extends State<MainPage>
       this.userPhone = (prefs.getString('userPhone') ?? null);
       print('in userPhone: $userPhone');
     });
+
+    pref.getValues();
   }
 
   Future<void> checkUserProfile() async {
@@ -124,7 +121,13 @@ class _MainPageState extends State<MainPage>
     if (this.isLoggedIn == true || userPhone != null) {
       //not correct condition
       print('you are login(firebase)');
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context).pushReplacementNamed('/home');//dummyHome
+      // Navigator.pushReplacement(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) => DummyHome(),
+      //         ),
+      //       );
     } else {
       print('you are not login');
       Navigator.of(context).pushReplacementNamed('/loginpage');

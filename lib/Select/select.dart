@@ -27,7 +27,7 @@ class _SelectPageState extends State<SelectPage> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
-          'Select',
+          widget.selectName,
         ),
         // actions: <Widget>[
         //   new Padding(
