@@ -96,7 +96,7 @@ class Verification {
 
     //1.if vendor phone not found in vendor collection then create new vendor document
     //2.redirect it to vendor registration page
-    //3.after filling registration form redirect to waitForVerification page
+    //3.after filling registration form redirect to waitForVerification page//
 
     try {
       print('in getVendor doc phn: ${pref.phone}');
@@ -119,11 +119,12 @@ class Verification {
         print('user:$found');
         if(!found){
           await setNewVendor();
-          return 'new';
+          return 'form';
         }else{
           print('old user so not set');
           // return 'old';
-          await checkVendorInfo();
+         String res =  await checkVendorInfo();
+         return res;
         }
       });
 
@@ -156,11 +157,20 @@ class Verification {
  Future<String>checkVendorInfo()async{
     try{
       String ret = await Firestore.instance
-          .collection('vendors').document().get().then((onValue)async{
-            print(onValue);
+          .collection('vendors').document(pref.phone).get().then((onValue)async{
+            // onValue['verify'];
+            if(onValue['verify']== 'yes'){ //return vendor 'verifed' and venor home screen where he can manage Q
+                return 'verified';
+            }
+            else{
+              return 'form';
+            }
+            // print(onValue);
           });
+          return ret;
     }catch(e){
-
+      print('checkVendorInfo err ; $e');
+      return 'err';
     }
   }
 }

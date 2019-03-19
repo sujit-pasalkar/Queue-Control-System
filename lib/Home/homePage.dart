@@ -131,8 +131,8 @@ class _HomePageState extends State<HomePage> {
 
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
-      Navigator.of(context).pushNamed('/dummyHome');//
-      // logout();
+      // Navigator.of(context).pushNamed('/dummyHome');//
+      logout();
     }
   }
 

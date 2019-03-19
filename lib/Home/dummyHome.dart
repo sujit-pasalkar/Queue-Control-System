@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../SharedPref/SharedPref.dart';
 import '../Verification/verification.dart';
 import 'homePage.dart';
+import '../VendorForm/form.dart';
 
 class DummyHome extends StatefulWidget {
   @override
@@ -38,12 +39,26 @@ class _DummyHomeState extends State<DummyHome> {
         //         builder: (context) => HomePage(),
         //       ),
         //     );
-      Navigator.of(context).pushReplacementNamed('/home');
+      // Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context)
+    .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
 
 
     } else {
       var result = await vrf.getVendorDoc();
-      print(result);
+      print(result);//form verified err
+      if(result == 'form'){
+      // Navigator.of(context).pushReplacementNamed('/formPage');
+       Navigator.of(context)
+    .pushNamedAndRemoveUntil('/formPage', (Route<dynamic> route) => false);
+
+        // Navigator.pushReplacement(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (context) => FormPage(),
+        //       ),
+        //     );
+      }
     
     }
   }

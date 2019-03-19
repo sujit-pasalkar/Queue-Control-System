@@ -205,7 +205,9 @@ class _LoginPageState extends State<LoginPage> {
     pref.setPhone(this.phoneNo);
     pref.setLoginType(loginType);
     print('register success');
-    Navigator.of(context).pushReplacementNamed('/home');
+    // Navigator.of(context).pushReplacementNamed('/dummyHome');
+Navigator.of(context)
+    .pushNamedAndRemoveUntil('/dummyHome', (Route<dynamic> route) => false);
     // Navigator.pushReplacement(
     //           context,
     //           MaterialPageRoute(

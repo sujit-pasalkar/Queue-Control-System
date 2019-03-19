@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
 import 'Home/dummyHome.dart';
 import 'Login/loginPage.dart';
+import 'VendorForm/form.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
           '/loginpage': (BuildContext context) => LoginPage(),
           '/home': (BuildContext context) => Home(),
           '/dummyHome': (BuildContext context) => DummyHome(),
-
+          '/formPage': (BuildContext context) => FormPage(),
         });
   }
 }
@@ -121,7 +122,7 @@ class _MainPageState extends State<MainPage>
     if (this.isLoggedIn == true || userPhone != null) {
       //not correct condition
       print('you are login(firebase)');
-      Navigator.of(context).pushReplacementNamed('/home');//dummyHome
+      Navigator.of(context).pushReplacementNamed('/dummyHome');
       // Navigator.pushReplacement(
       //         context,
       //         MaterialPageRoute(
