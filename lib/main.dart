@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'SharedPref/SharedPref.dart';
+import 'Home/hospitalHomePage.dart';
 
 void main() => runApp(new MyApp());
 
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
           '/home': (BuildContext context) => Home(),
           '/dummyHome': (BuildContext context) => DummyHome(),
           '/formPage': (BuildContext context) => FormPage(),
+          '/hospital':(BuildContext context) => Hospital(),
         });
   }
 }
@@ -119,10 +121,10 @@ class _MainPageState extends State<MainPage>
 
   Future<void> checkUserProfile() async {
     print('in checking user profile:${this.userPhone}');
-    if (this.isLoggedIn == true || userPhone != null) {
+    if (this.isLoggedIn == true && userPhone != null) {
       //not correct condition
       print('you are login(firebase)');
-      Navigator.of(context).pushReplacementNamed('/dummyHome');
+      Navigator.of(context).pushReplacementNamed('/home');///dummyHome
       // Navigator.pushReplacement(
       //         context,
       //         MaterialPageRoute(

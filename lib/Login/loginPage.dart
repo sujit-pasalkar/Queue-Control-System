@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> verifyPhone(_scaffoldKey,String loginType) async {
+  Future<void> verifyPhone(_scaffoldKey, String loginType) async {
     final PhoneCodeAutoRetrievalTimeout autoRetrieve = (String verId) {
       this.verificationId = verId;
       print('**in -> 1.AutoRetrivalTimeOut**' + verId);
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         this.loadingMsg = "";
       });
 
-      smsCodeDialog(_scaffoldKey,loginType).then((value) {
+      smsCodeDialog(_scaffoldKey, loginType).then((value) {
         print('** Done clicked **');
       });
     };
@@ -73,7 +73,6 @@ class _LoginPageState extends State<LoginPage> {
       final snackBar = SnackBar(
         content: Text("Phone Number verified Successfully."),
       );
-      // Navigator.of(context).pop();
       _scaffoldKey.currentState.showSnackBar(snackBar);
       register(loginType);
     };
@@ -101,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
         verificationFailed: veriFailed);
   }
 
-  smsCodeDialog(_scaffoldKey,String loginType) {
+  smsCodeDialog(_scaffoldKey, String loginType) {
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -125,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text('Resend'),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  verifyPhone(_scaffoldKey,loginType);
+                  verifyPhone(_scaffoldKey, loginType);
                 },
               ),
               new FlatButton(
@@ -140,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                         print('user:$user');
                         print("phone" + this.phoneNo);
                       } else {
-                        signIn(this.smsCode,loginType);
+                        signIn(this.smsCode, loginType);
                       }
                     });
                   } else {
@@ -206,8 +205,8 @@ class _LoginPageState extends State<LoginPage> {
     pref.setLoginType(loginType);
     print('register success');
     // Navigator.of(context).pushReplacementNamed('/dummyHome');
-Navigator.of(context)
-    .pushNamedAndRemoveUntil('/dummyHome', (Route<dynamic> route) => false);
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
     // Navigator.pushReplacement(
     //           context,
     //           MaterialPageRoute(
@@ -216,26 +215,39 @@ Navigator.of(context)
     //         );
   }
 
-  signIn(smscode,String loginType) {
+  signIn(smscode, String loginType) async {
     print('in sign in..$verificationId / $smsCode');
     try {
-      FirebaseAuth.instance
-          .signInWithPhoneNumber(
-              verificationId: verificationId, smsCode: smsCode)
-          .then((user) {
-        print("signed User : $user");
-        this.register(loginType);
-      }, onError: (e) {
-        print('....$e');
-        setState(() {
-          this.loading = false;
-        });
-        final snackBar = SnackBar(
-          content: Text("The sms verification code is invalid."),
-        );
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-        Navigator.of(context).pop();
-      });
+      // FirebaseAuth.instance
+      //     .signInWithPhoneNumber(
+      //         verificationId: verificationId, smsCode: smsCode)
+      //     .then((user) {
+      //   print("signed User : $user");
+      //   this.register(loginType);
+      // }, onError: (e) {
+      //   print('....$e');
+      //   setState(() {
+      //     this.loading = false;
+      //   });
+      //   final snackBar = SnackBar(
+      //     content: Text("The sms verification code is invalid."),
+      //   );
+      //   _scaffoldKey.currentState.showSnackBar(snackBar);
+      //   Navigator.of(context).pop();
+      // });
+
+// .signInWithPhoneNumber() not support solution
+      final AuthCredential credential = PhoneAuthProvider.getCredential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      final FirebaseUser user =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final FirebaseUser currentUser =
+          await FirebaseAuth.instance.currentUser();
+      assert(user.uid == currentUser.uid);
+      print('done..$user');
+
     } catch (e) {
       //no use
       final snackBar = SnackBar(
@@ -246,7 +258,7 @@ Navigator.of(context)
     }
   }
 
-  phoneConfirmAlert(_scaffoldKey,String loginType) {
+  phoneConfirmAlert(_scaffoldKey, String loginType) {
     if (formKey.currentState.validate()) {
       if (this._country_code == null) {
         final snackBar = SnackBar(content: Text("Select country code!"));
@@ -261,10 +273,10 @@ Navigator.of(context)
           this.loadingMsg = "Verifying Your Number";
         });
         formKey.currentState.save();
-        verifyPhone(_scaffoldKey,loginType);
+        verifyPhone(_scaffoldKey, loginType);
       }
     } else
-      print("invalid form");  
+      print("invalid form");
   }
 
   @override
@@ -314,7 +326,7 @@ Navigator.of(context)
                       style: TextStyle(color: Colors.black38),
                     ),
                     onChanged: (value) {
-                      _country_code = value;
+                      // _country_code = value;
                       setState(() {
                         _country_code = value;
                       });
@@ -397,39 +409,32 @@ Navigator.of(context)
                         //   loginType = 'user';
                         // });
                         print('${this._country_code}-${this.phoneNo}');
-                        phoneConfirmAlert(
-                          _scaffoldKey,'users'
-                        );
+                        phoneConfirmAlert(_scaffoldKey, 'users');
                       },
               ),
             ),
           ),
-          verifybtn
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    GestureDetector(
-                      onTap: () {
-                        // setState(() {
-                        //   loginType = 'vendor';
-                        // });
-                        phoneConfirmAlert(
-                          _scaffoldKey,'vendors'
-                        );
-                      },
-                      child: Text('verify as a vendor',
-                          style: TextStyle(color: Colors.indigo[900])),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 30),
-                    )
-                  ],
-                )
-              : SizedBox(
-                  height: 0,
-                  width: 0,
-                )
+          // verifybtn
+          //     ? Row(
+          //         crossAxisAlignment: CrossAxisAlignment.center,
+          //         mainAxisAlignment: MainAxisAlignment.center,
+          //         children: <Widget>[
+          //           GestureDetector(
+          //             onTap: () {
+          //               phoneConfirmAlert(_scaffoldKey, 'vendors');
+          //             },
+          //             child: Text('verify as a vendor',
+          //                 style: TextStyle(color: Colors.indigo[900])),
+          //           ),
+          //           Padding(
+          //             padding: EdgeInsets.only(bottom: 30),
+          //           )
+          //         ],
+          //       )
+          //     : SizedBox(
+          //         height: 0,
+          //         width: 0,
+          //       )
         ],
       );
     } else {
@@ -437,9 +442,7 @@ Navigator.of(context)
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          CircularProgressIndicator(
-              
-              ),
+          CircularProgressIndicator(),
           Padding(
             padding: EdgeInsets.all(5),
           ),

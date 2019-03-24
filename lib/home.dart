@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:queue_control/Home/homePage.dart';
 import 'package:queue_control/status.dart';
+import 'SharedPref/SharedPref.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -23,6 +24,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    getUserProfile();
+
     currentIndex = 0;
     isBottomBarVisible = true;
     hideButtonController = new ScrollController();
@@ -221,5 +224,23 @@ class _HomeState extends State<Home> {
         exit(0);
         break;
     }
+  }
+
+  getUserProfile()async{
+    // var documentReference = 
+    await Firestore.instance
+          .collection('users')
+          .document(pref.phone).get().then((onValue){
+            print('----------------------------------------------------------');
+
+            print(onValue.data['addr']);
+            print(onValue.data['email']);
+
+            pref.setAddr(onValue.data['addr']);
+            pref.setEmail(onValue.data['email']);
+            pref.setName(onValue.data['name']);
+
+          });
+
   }
 }

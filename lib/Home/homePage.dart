@@ -30,7 +30,9 @@ class _HomePageState extends State<HomePage> {
   var listMessage;
 
   @override
-  initState() {}
+  initState() {
+    
+  }
 
   //new
   @override
@@ -70,7 +72,7 @@ class _HomePageState extends State<HomePage> {
         ),
         body: new StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance
-                .collection("vendor")
+                .collection("services")
                 .getDocuments()
                 .asStream(),
             builder:
@@ -114,24 +116,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   //# after view functions
-  logout() {
+  logout() async{
     FirebaseAuth.instance.signOut().then((action) {
-      clearSharedPref();
+      // clearSharedPref();
+      pref.clearUser();
       Navigator.pushReplacementNamed(context, '/loginpage');
     }).catchError((e) {
       print("*err:*" + e);
     });
   }
 
-  clearSharedPref() async {
-    pref.clearUser();
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // prefs.clear();
-  }
-
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
-      // Navigator.of(context).pushNamed('/dummyHome');//
       logout();
     }
   }
@@ -142,7 +138,7 @@ class _HomePageState extends State<HomePage> {
       width: 290.0,
       height: 115.0,
       child: Card(
-        color: Colors.indigo[300],
+        color: Colors.indigo[900],
         child: Padding(
           padding: const EdgeInsets.only(
             top: 8.0,
@@ -161,10 +157,10 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: <Widget>[
                   Icon(
-                    Icons.star,
+                    Icons.list,
                     color: Colors.white,
                   ),
-                  Text('count of collection',
+                  Text('1',//${doc.documentID.length}
                       style: TextStyle(color: Colors.white, fontSize: 15))
                 ],
               )

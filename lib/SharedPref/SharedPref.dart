@@ -5,7 +5,9 @@ final SharedPref pref = new SharedPref();
 class SharedPref {
   String name;
   String phone;
+  String email;
   String loginType;
+  String address;
 
   // SharedPref() {}
 
@@ -14,6 +16,8 @@ class SharedPref {
     this.phone = (_prefs.getString('userPhone') ?? null);
     this.name = (_prefs.getString('userName') ?? null);
     this.loginType = (_prefs.getString('userLoginType') ?? null);
+    this.address = (_prefs.getString('address') ?? null);
+
   }
 
   setName(String name) async {
@@ -28,6 +32,20 @@ class SharedPref {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     _prefs.setString('userPhone', phone);
     this.phone = phone;
+  }
+
+  setEmail(String email) async {
+    print('Phone:$email');
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.setString('userEmail', email);
+    this.email = email;
+  }
+
+  setAddr(String addr) async {
+    print('Phone:$addr');
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.setString('userAddr', addr);
+    this.address = addr;
   }
 
   setLoginType(String loginType) async {

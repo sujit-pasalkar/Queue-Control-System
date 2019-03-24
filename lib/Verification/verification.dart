@@ -144,10 +144,13 @@ class Verification {
           documentReference,
           {
             'phone': pref.phone,
-            'type':'',
+            'type':null,
             'address':'',
-            'verify':'no',
-            'name':''
+            'verify':false,
+            'name':'',
+            'email': '',
+            'queue':[],
+            'submission':false
           },
         );
       });
@@ -159,7 +162,7 @@ class Verification {
       String ret = await Firestore.instance
           .collection('vendors').document(pref.phone).get().then((onValue)async{
             // onValue['verify'];
-            if(onValue['verify']== 'yes'){ //return vendor 'verifed' and venor home screen where he can manage Q
+            if(onValue['verify']){ //return vendor 'verifed' and venor home screen where he can manage Q
                 return 'verified';
             }
             else{
@@ -171,6 +174,63 @@ class Verification {
     }catch(e){
       print('checkVendorInfo err ; $e');
       return 'err';
+    }
+  }
+
+ Future<String> registerVendor(nm,email,addr,typ,clinc_name) async{
+    try {
+      print('$nm , $email , ${pref.phone} , $typ');
+      String ret = await Firestore.instance
+          .collection('vendors').document(pref.phone).updateData(
+            {'dr_name':nm,
+            'email':email,
+            'address':addr,
+            'type':typ,
+            'submission':true,
+            'clinic_name':clinc_name
+            })
+          .then((onValue){
+            return 'saved';
+          });
+          return ret;
+    } catch (e) {
+      return 'error';
+    }
+  }
+
+ Future<String> updateStatus(timestamp,idx) async{
+   try {
+      print('tm:$timestamp');
+      // String ret = await Firestore.instance
+      //     .collection('vendors').document(pref.phone).updateData(
+      //       {'queue':[][idx]['status'][true]
+      //       })
+      //     .then((onValue){
+      //       return 'saved';
+      //     });
+      //     return ret;
+  final DocumentReference postRef = Firestore.instance.document('vendors/${pref.phone}');
+      await Firestore.instance.runTransaction((Transaction tx) async {
+            DocumentSnapshot snapshot =
+                await tx.get(postRef);
+            var doc = snapshot.data;
+            print(doc['queue'][idx]['status'].toString());
+            // if (doc['queue'][idx].contains(timestamp)) {
+            // print('yes');
+              await tx.update(snapshot.reference, <String, dynamic>{
+                doc['queue'][idx]['status']: true
+              });
+            // } 
+            // else {
+            //   await tx.update(snapshot.reference, <String, dynamic>{
+            //     'upvoters': FieldValue.arrayUnion(['12345'])
+            //   });
+            // }
+          });
+
+
+    } catch (e) {
+      return 'error';
     }
   }
 }
