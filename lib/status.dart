@@ -32,8 +32,6 @@ class _StatusState extends State<Status> {
                 return Center(child: CircularProgressIndicator());
               return snapshot.data.documents.length > 0
                   ?
-                  // Expanded(
-                  //     child:
                   ListView(
                       children: snapshot.data.documents
                           .map((DocumentSnapshot document) {
@@ -41,7 +39,6 @@ class _StatusState extends State<Status> {
                           child: Column(
                             children: <Widget>[
                               ListTile(
-                                // ${s[0].toUpperCase()}${s.substring(1)}
                                 title: new Text(
                                     "${document['serviceType'][0].toUpperCase()}${document['serviceType'].substring(1)}"),
                                 subtitle: new Text(document['servicename']),
@@ -50,7 +47,6 @@ class _StatusState extends State<Status> {
                                   color: Colors.indigo[900],
                                   iconSize: 40,
                                   onPressed: () {
-                                    // print('delete this token from Queue');
                                     deleteToken(
                                         document['serviceType'],
                                         document['servicename'],

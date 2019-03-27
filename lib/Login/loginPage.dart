@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:queue_control/SharedPref/SharedPref.dart';
 import '../Home/dummyHome.dart';
-// import '../Verification/verification.dart';
+import '../Verification/verification.dart';
+import 'package:queue_control/VendorForm/form.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -203,7 +204,8 @@ class _LoginPageState extends State<LoginPage> {
     print('in register: $loginType');
     pref.setPhone(this.phoneNo);
     pref.setLoginType(loginType);
-    print('register success');
+    var result = vrf.getUserDoc();
+    print('register success:$result');
     // Navigator.of(context).pushReplacementNamed('/dummyHome');
     Navigator.of(context)
         .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
@@ -247,7 +249,6 @@ class _LoginPageState extends State<LoginPage> {
           await FirebaseAuth.instance.currentUser();
       assert(user.uid == currentUser.uid);
       print('done..$user');
-
     } catch (e) {
       //no use
       final snackBar = SnackBar(
@@ -285,7 +286,20 @@ class _LoginPageState extends State<LoginPage> {
     return new Scaffold(
       key: _scaffoldKey,
       appBar: new AppBar(
-          title: new Text('Verify Your Mobile Number'), centerTitle: true),
+          title: new Text('Verify Your Mobile Number'), centerTitle: false,
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.person,color:Colors.white ),
+              onPressed: (){
+                print('admin');
+                Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  FormPage()));
+              },
+            )
+          ],),
       resizeToAvoidBottomPadding: true,
       body: body(),
     );

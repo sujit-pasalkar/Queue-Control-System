@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:uuid/uuid_util.dart';
 import 'package:queue_control/SharedPref/SharedPref.dart';
 import 'package:queue_control/Profile/profilePage.dart';
+import 'package:queue_control/Chat/chatPage.dart';
 
 var uuid = new Uuid();
 
@@ -38,6 +39,7 @@ class _AddQState extends State<AddQ> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('${widget.serviceName.toUpperCase()}'),
+        actions: <Widget>[],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
@@ -78,7 +80,8 @@ class _AddQState extends State<AddQ> {
                                     left: 0.0,
                                     right: 0.0,
                                     child: Container(
-                                        padding: EdgeInsets.all(8.0),
+                                        padding:
+                                            EdgeInsets.fromLTRB(8, 0, 8, 0),
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             begin: Alignment.bottomCenter,
@@ -89,17 +92,41 @@ class _AddQState extends State<AddQ> {
                                             ],
                                           ),
                                         ),
-                                        child: Text(
-                                          '${snapshot.data.data['address']}',
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            decorationStyle:
-                                                TextDecorationStyle.solid,
-                                            decoration: TextDecoration.none,
-                                            fontSize: 18.0,
-                                          ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: <Widget>[
+                                            Text(
+                                              '${snapshot.data.data['address']}',
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                decorationStyle:
+                                                    TextDecorationStyle.solid,
+                                                decoration: TextDecoration.none,
+                                                fontSize: 18.0,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.chat,
+                                                color: Colors.white,
+                                              ),
+                                              iconSize: 30,
+                                              onPressed: () {
+                                                print(snapshot
+                                                    .data.data['phone'].runtimeType);
+
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) => Chat(
+                                                            servicePhone:snapshot.data.data['phone'],
+                                                            serviceName: widget.serviceName)));
+                                              },
+                                            )
+                                          ],
                                         )),
                                   )
                                 ])),
@@ -348,7 +375,7 @@ class _AddQState extends State<AddQ> {
               'servicename': widget.serviceName,
               // 'phone': pref.phone,
               'time': FieldValue.serverTimestamp(),
-              'averageWaitingTime':queueLen*timePerService
+              'averageWaitingTime': queueLen * timePerService
             },
           );
         }).then((onValue) async {});
