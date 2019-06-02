@@ -1,0 +1,86 @@
+1.dont enter wrong phone number while admin login 
+admins entries are predefine, dont change keys in firebase
+
+2.admin password is common for naw 'admin'
+
+
+Remainings
+1.profile page 
+2.nav to profile edit page when login
+
+
+flow
+
+main->autolog->home->selectpage->addQpage
+
+
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+admin.initializeApp();
+
+
+
+// export const addUser = functions.https.onRequest((request, response) => {
+//     const users = admin.firestore().collection('usersTest10');
+//         return users.add({
+//         "name": request,
+//         "email": request
+//     });
+// //  response.send("Hello from Firebase!");
+// });
+
+
+//.js
+// const functions = require('firebase-functions');
+// const admin = require('firebase-admin');
+// admin.initializeApp(functions.config().firebase);
+
+// exports.addUser = functions.https.onCall((data, context) => {
+//     const users = admin.firestore().collection('usersTest10');
+//     return users.add({
+//         name: data["name"],
+//         email: data["email"]
+//     });
+// });
+
+
+//new
+//private chat
+exports.notify = functions.firestore
+  .document('notify/{idTo}/')
+  .onCreate(async event => {
+
+    const data = event.data();
+    console.log('data:  '+data);
+    // const receiverId = data.receiverPin;
+    // const title = data.senderName;
+    // const msg = data.msg;
+
+    // Notification content
+    const payload = {
+      notification: {
+        title: 'you have booked token for: ' + 'service name',
+        body: 'your  remaiing timing is 10 minutes',//data.body
+        icon: 'https://goo.gl/Fz9nrQ',
+        badge: '1',
+        sound: 'default'
+      }
+    }
+
+    // ref to the device collection for the user
+    const db = admin.firestore()
+    const devicesRef = db.collection('userTokens').where('id', '==', '7040470678')
+
+    // get the user's tokens and send notifications
+    const devices = await devicesRef.get();
+
+    const tokens = <any>[];
+    // send a notification to each device token
+    devices.forEach(result => {
+      const token = result.data().token;
+      tokens.push(token)
+    })
+
+    return admin.messaging().sendToDevice(tokens, payload)
+
+  });

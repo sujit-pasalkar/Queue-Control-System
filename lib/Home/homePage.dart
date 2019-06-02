@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Select/select.dart';
 import '../SharedPref/SharedPref.dart';
-import '../Home/dummyHome.dart';
+// import '../Home/dummyHome.dart';
 
 class HomePage extends StatefulWidget {
   final ScrollController hideButtonController;
@@ -126,10 +126,17 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // profile(){
+
+  // }
+
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
       logout();
     }
+    // else{
+    //   profile();
+    // }
   }
 
   //new

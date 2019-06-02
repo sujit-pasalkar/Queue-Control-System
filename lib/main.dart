@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:queue_control/Profile/simple_profile.dart';
 import 'home.dart';
-import 'Home/dummyHome.dart';
+// import 'Home/dummyHome.dart';
 import 'Login/loginPage.dart';
-import 'VendorForm/form.dart';
+// import 'VendorForm/form.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'SharedPref/SharedPref.dart';
-import 'Home/hospitalHomePage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
+//main method
 void main() => runApp(new MyApp());
 
+//main class
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -20,44 +23,36 @@ class MyApp extends StatelessWidget {
         title: 'QueueC',
         home: new MainPage(),
         theme: ThemeData(
-          // primarySwatch: Colors.lightBlue, //
           brightness: Brightness.light,
           primaryColor: Colors.indigo[
-              900], //Color.fromRGBO(58, 66, 86, 1.0),//Colors.lightBlue[800],
+              900], 
           accentColor: Colors.blue[900],
-          // textTheme: TextTheme(
-          //   headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold,color: ),
-          //   title: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
-          //   body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-          // ),
         ),
         routes: <String, WidgetBuilder>{
           '/loginpage': (BuildContext context) => LoginPage(),
           '/home': (BuildContext context) => Home(),
-          '/dummyHome': (BuildContext context) => DummyHome(),
-          '/formPage': (BuildContext context) => FormPage(),
-          '/hospital':(BuildContext context) => Hospital(),
+          '/simpleProfile': (BuildContext context) => SimpleProfile(),
+          // '/formPage': (BuildContext context) => FormPage(),
+          // '/hospital':(BuildContext context) => Hospital(),
         });
   }
 }
 
+//calling statefull class
 class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => new _MainPageState();
 }
 
 class _MainPageState extends State<MainPage>
-// with SingleTickerProviderStateMixin
 {
-  //#Animation
-  // AnimationController _logoAnimationCtrl;
-  // Animation<double> _iconAnimationBounce;
-  // CurvedAnimation _iconAnimation; //
-
   //#connectivity
   var _connectionStatus = 'Unknown';
   Connectivity connectivity;
   StreamSubscription<ConnectivityResult> subscription;
+
+  //#fcm
+  FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
 
   bool isLoggedIn;
   String userPhone;
@@ -65,18 +60,6 @@ class _MainPageState extends State<MainPage>
 
   @override
   void initState() {
-    // super.initState();
-    // print('init main....${isLoggedIn}');
-    //#iconAnimation
-    // _logoAnimationCtrl = AnimationController(
-    //     duration: const Duration(milliseconds: 3000), vsync: this);
-    // _iconAnimation = CurvedAnimation(
-    //     parent: _logoAnimationCtrl, curve: Curves.easeIn /* bounceOut */);
-    // _iconAnimationBounce =
-    //     CurvedAnimation(parent: _logoAnimationCtrl, curve: Curves.bounceOut);
-    // _iconAnimation.addListener(() => this.setState(() {}));
-    // _iconAnimationBounce.addListener(() => this.setState(() {}));
-    // _logoAnimationCtrl.forward();
 
     isLoggedIn = false;
 
@@ -105,6 +88,24 @@ class _MainPageState extends State<MainPage>
         print('no  internet');
       }
     });
+
+    //#fcm
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) {
+        print('on message $message');
+      },
+      onResume: (Map<String, dynamic> message) {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) {
+        print('on launch $message');
+      },
+    );
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.getToken().then((token) {
+      print('Token:$token');
+    });
   }
 
   _loadUserState() async {
@@ -122,15 +123,13 @@ class _MainPageState extends State<MainPage>
   Future<void> checkUserProfile() async {
     print('in checking user profile:${this.userPhone}');
     if (this.isLoggedIn == true && userPhone != null) {
-      //not correct condition
       print('you are login(firebase)');
-      Navigator.of(context).pushReplacementNamed('/home');///dummyHome
-      // Navigator.pushReplacement(
-      //         context,
-      //         MaterialPageRoute(
-      //           builder: (context) => DummyHome(),
-      //         ),
-      //       );
+      // if(pref.name !=null ){
+      //   print('name : ${pref.name}');
+      // Navigator.of(context).pushReplacementNamed('/simpleProfile');
+      // }
+      // else
+      Navigator.of(context).pushReplacementNamed('/home');
     } else {
       print('you are not login');
       Navigator.of(context).pushReplacementNamed('/loginpage');
@@ -148,7 +147,6 @@ class _MainPageState extends State<MainPage>
           "No Internet Connection",
           style: TextStyle(
             fontStyle: FontStyle.italic,
-            // fontFamily: 'Raleway',
             color: Colors.white,
             fontSize: 20.0,
           ),
@@ -212,7 +210,6 @@ class _MainPageState extends State<MainPage>
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         fontSize: 20.0,
-                        // fontFamily: qa
                       ),
                     ),
                     Padding(padding: EdgeInsets.only(top: 40.0)),

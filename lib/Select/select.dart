@@ -81,7 +81,7 @@ class _SelectPageState extends State<SelectPage> {
         .map(
           (doc) => GestureDetector(
               onTap: () {
-                // print('object');
+                print(doc.data);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -90,16 +90,11 @@ class _SelectPageState extends State<SelectPage> {
                             servicetype: widget.selectName)));
               },
               child: ListTile(
-                leading: CircleAvatar(child: Text(doc.documentID[0]),),
+                leading: CircleAvatar(child: Text(doc.documentID[0].toUpperCase()),),
                 title: Text(doc.documentID,style: TextStyle(fontSize: 20),),
+                subtitle: Text(doc.data['address'],style: TextStyle(fontSize: 16),),
               )
-              
               ))
         .toList();
   }
-
-  // genToken(_scaffoldKey){
-  //    final snackBar = SnackBar(content: Text("Token added"));
-  //       _scaffoldKey.currentState.showSnackBar(snackBar);
-  // }
 }

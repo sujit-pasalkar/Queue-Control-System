@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'SharedPref/SharedPref.dart';
+import 'package:intl/intl.dart';
 
 class Status extends StatefulWidget {
   final ScrollController hideButtonController;
@@ -12,6 +13,19 @@ class Status extends StatefulWidget {
 }
 
 class _StatusState extends State<Status> {
+  var now;
+  @override
+  void initState() {
+    getDate();
+    super.initState();
+  }
+
+  getDate() {
+     now = new DateTime.now();
+     print(now);
+     print(DateTime.parse(now.toString()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +45,7 @@ class _StatusState extends State<Status> {
               if (!snapshot.hasData)
                 return Center(child: CircularProgressIndicator());
               return snapshot.data.documents.length > 0
-                  ?
-                  ListView(
+                  ? ListView(
                       children: snapshot.data.documents
                           .map((DocumentSnapshot document) {
                         return new Card(
@@ -56,13 +69,28 @@ class _StatusState extends State<Status> {
                               ),
                               ListTile(
                                 title: new Text('Booked At'),
-                                subtitle: new Text(document['time'].toString()),
+                                subtitle: Text(DateFormat('dd MMM kk:mm')
+                                    .format(document['time'])),
+                                // new Text(document['time'].toString()),
+                                // trailing: now.isAfter(document['time'])
                               ),
                               ListTile(
                                 title: new Text('Average Waiting Time'),
                                 subtitle: new Text(
                                     document['averageWaitingTime'].toString() +
                                         " Minutes"),
+                              ),
+                               ListTile(
+                                title: new Text('Your Timing'),
+                                subtitle: 
+                                Text(DateFormat('dd MMM kk:mm')
+                                    .format(calcTime(document['time'],document['averageWaitingTime']))),
+
+                                trailing: now.isAfter(calcTime(document['time'],document['averageWaitingTime']))
+                                ?
+                                Text('token expired')
+                                :
+                                Text('')
                               ),
                             ],
                           ),
@@ -84,6 +112,24 @@ class _StatusState extends State<Status> {
             }));
   }
 
+  dynamic calcTime(time,waitTime){
+
+    dynamic addedT =time.add(new Duration(minutes: 50));
+    print('time: $time');
+    print('added time :$addedT');
+
+    // var  a =now.di
+    // difference(time).inDays;
+    print('diff  : ${now.isAfter(time)}');
+    // print('diff  : ${now.isAfter(time)}');
+    return addedT;
+    // Text(DateFormat('dd MMM kk:mm:ss').format(addedT));
+  }
+
+  Widget expire(time,waitTime){
+
+  }
+
   deleteToken(type, name, uuid) async {
     //delete from service
     var docRefServ = await Firestore.instance
@@ -96,31 +142,31 @@ class _StatusState extends State<Status> {
 
     Firestore.instance.runTransaction((transaction) async {
       await transaction.delete(docRefServ);
-    }).then((onValue) async{
+    }).then((onValue) async {
       print('deleted token in serv');
-       //increment count
-        var docRef = await Firestore.instance
-            .collection('services')
-            .document(type)
-            .collection(type)
-            .document(name);
-        var queueLen;// = 0;
+      //increment count
+      var docRef = await Firestore.instance
+          .collection('services')
+          .document(type)
+          .collection(type)
+          .document(name);
+      var queueLen; // = 0;
 
-        await docRef.get().then((onValue) async {
-          print(onValue.data['queuelength']);
-          queueLen = onValue.data['queuelength'];
-        });
+      await docRef.get().then((onValue) async {
+        print(onValue.data['queuelength']);
+        queueLen = onValue.data['queuelength'];
+      });
 
-        print(queueLen);
+      print(queueLen);
 
-        Firestore.instance.runTransaction((transaction) async {
-          await transaction.update(
-            docRef,
-            {
-              'queuelength': queueLen - 1,
-            },
-          );
-        });
+      Firestore.instance.runTransaction((transaction) async {
+        await transaction.update(
+          docRef,
+          {
+            'queuelength': queueLen - 1,
+          },
+        );
+      });
     });
 
     //delete from user
@@ -129,9 +175,9 @@ class _StatusState extends State<Status> {
         .document(pref.phone)
         .collection('tokens')
         .document(uuid);
-         Firestore.instance.runTransaction((transaction) async {
+    Firestore.instance.runTransaction((transaction) async {
       await transaction.delete(docRefUser);
-    }).then((onValue){
+    }).then((onValue) {
       print('deleted token');
     });
   }

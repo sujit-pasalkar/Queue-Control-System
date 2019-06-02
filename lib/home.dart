@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:io';
-// import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:queue_control/Home/homePage.dart';
 import 'package:queue_control/status.dart';
@@ -17,7 +17,8 @@ class _HomeState extends State<Home> {
   bool isBottomBarVisible;
   int currentIndex;
 
-  // FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
   PageStorageKey homeKey = PageStorageKey('home');
   PageStorageKey statusKey = PageStorageKey('status');
 
@@ -47,6 +48,33 @@ class _HomeState extends State<Home> {
           isBottomBarVisible = true;
         });
       }
+    });
+
+    //#fcm
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) {
+        print('on message $message');
+      },
+      onResume: (Map<String, dynamic> message) {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) {
+        print('on launch $message');
+      },
+    );
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.getToken().then((token) {
+      var documentReference = Firestore.instance
+          .collection('userTokens')
+          .document(pref.phone);
+
+      Firestore.instance.runTransaction((transaction) async {
+        await transaction.set(
+          documentReference,
+          {'token': token, 'id': pref.phone},
+        );
+      });
     });
   }
 
@@ -239,7 +267,6 @@ class _HomeState extends State<Home> {
             pref.setAddr(onValue.data['addr']);
             pref.setEmail(onValue.data['email']);
             pref.setName(onValue.data['name']);
-
           });
 
   }

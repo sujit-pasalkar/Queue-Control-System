@@ -18,6 +18,7 @@ class _FormPageState extends State<FormPage> {
 
   TextEditingController passCtrl = new TextEditingController();
   TextEditingController serviceNameCtrl = new TextEditingController();
+  TextEditingController phoneCtrl = new TextEditingController();
 
   // String name, address, verify, phone, email;
   // String adminPass, serviceName;
@@ -65,94 +66,130 @@ class _FormPageState extends State<FormPage> {
           ],
         ),
         body: new Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Form(
-              key: _formKey,
-              autovalidate: _autoValidate,
-              child: Column(
+            new Expanded(
+              child: ListView(
                 children: <Widget>[
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                    child: DropdownButton(
-                      value: selectedType,
-                      items: selectType,
-                      hint: new Text(
-                        'Select type of service',
-                        style: TextStyle(color: Colors.black38),
-                      ),
-                      onChanged: (value) {
-                        print(value);
-                        setState(() {
-                          selectedType = value;
-                        });
-                      },
-                    ),
-                  ),
-                  Container(
-                    color: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                    child: TextFormField(
-                      enabled: true,
-                      controller: serviceNameCtrl,
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                      decoration: InputDecoration(
-                        hasFloatingPlaceholder: true,
-                        labelText: "Type Your Service Name",
-                        labelStyle: TextStyle(
-                          color: Colors.blue[500],
+                  Form(
+                    key: _formKey,
+                    autovalidate: _autoValidate,
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 5.0),
+                          child: DropdownButton(
+                            value: selectedType,
+                            items: selectType,
+                            hint: new Text(
+                              'Select type of service',
+                              style: TextStyle(color: Colors.black38),
+                            ),
+                            onChanged: (value) {
+                              print(value);
+                              setState(() {
+                                selectedType = value;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                      validator: (String arg) {
-                        if (arg.length < 2)
-                          return 'Name must be more than 2 charater';
-                        else
-                          return null;
-                      },
-                      onSaved: (String val) {},
-                    ),
-                  ),
-                  Container(
-                    color: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                    child: TextFormField(
-                      enabled: true,
-                      controller: passCtrl,
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                      decoration: InputDecoration(
-                        hasFloatingPlaceholder: true,
-                        labelText: "Password",
-                        labelStyle: TextStyle(
-                          color: Colors.blue[500],
+                           Container(
+                            color: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 5.0),
+                            child: 
+                            TextFormField(
+                              enabled: true,
+                              controller: serviceNameCtrl,
+                              style: TextStyle(
+                                color: Colors.black,
+                              ),
+                              decoration: InputDecoration(
+                                hasFloatingPlaceholder: true,
+                                labelText: "Type Your Service Name",
+                                labelStyle: TextStyle(
+                                  color: Colors.blue[500],
+                                ),
+                              ),
+                              validator: (String arg) {
+                                if (arg.length < 2)
+                                  return 'Name must be more than 2 charater';
+                                else
+                                  return null;
+                              },
+                              onSaved: (String val) {},
+                            ),
                         ),
-                      ),
-                      validator: (String arg) {
-                        if (arg != 'admin')
-                          return 'Incorrect password';
-                        else
-                          return null;
-                      },
-                      onSaved: (String val) {},
-                    ),
-                  ),
-                  new SizedBox(
-                    height: 20.0,
-                  ),
-                  new SizedBox(
-                    height: 50.0,
-                    child: new RaisedButton(
-                      color: Colors.indigo[900],
-                      onPressed: _validateInputs,
-                      child: new Text(
-                        'Access',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                        Container(
+                          color: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 5.0),
+                          child: TextFormField(
+                            enabled: true,
+                            controller: phoneCtrl,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                            decoration: InputDecoration(
+                              hasFloatingPlaceholder: true,
+                              labelText: "Your registered Phone Number",
+                              labelStyle: TextStyle(
+                                color: Colors.blue[500],
+                              ),
+                            ),
+                            validator: (String arg) {
+                              int val = int.parse(arg);
+                              if (val <= 9 && val >= 11)
+                                return 'Invalid Phone Number';
+                              else
+                                return null;
+                            },
+                            onSaved: (String val) {},
+                          ),
+                        ),
+                        Container(
+                          color: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 5.0),
+                          child: TextFormField(
+                            enabled: true,
+                            controller: passCtrl,
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                            decoration: InputDecoration(
+                              hasFloatingPlaceholder: true,
+                              labelText: "Password",
+                              labelStyle: TextStyle(
+                                color: Colors.blue[500],
+                              ),
+                            ),
+                            validator: (String arg) {
+                              if (arg != 'admin')
+                                return 'Incorrect password';
+                              else
+                                return null;
+                            },
+                            onSaved: (String val) {},
+                          ),
+                        ),
+                        new SizedBox(
+                          height: 20.0,
+                        ),
+                        new SizedBox(
+                          height: 50.0,
+                          child: new RaisedButton(
+                            color: Colors.indigo[900],
+                            onPressed: _validateInputs,
+                            child: new Text(
+                              'Access',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -236,26 +273,14 @@ class _FormPageState extends State<FormPage> {
   void _validateInputs() async {
     if (_formKey.currentState.validate() && selectedType != null) {
       _formKey.currentState.save();
-      // String result = await vrf.registerVendor(
-      //     name, email, address, selectedType, clinic_name);
       print('register result : ${serviceNameCtrl.text}');
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => AdminQ(
                   serviceName: serviceNameCtrl.text,
-                  servicetype: selectedType)));
-      // if (result == 'saved') {
-      //   print('form registered');
-      //   final snackBar = SnackBar(
-      //       content: Text("Your Form is submitted Successfully."),
-      //       backgroundColor: Colors.green);
-      //   _scaffoldKey.currentState.showSnackBar(snackBar);
-      // } else if (result == 'error' || result == null) {
-      //   final snackBar = SnackBar(
-      //       content: Text("Something went wrong"), backgroundColor: Colors.red);
-      //   _scaffoldKey.currentState.showSnackBar(snackBar);
-      // }
+                  servicetype: selectedType,
+                  phone: int.parse(phoneCtrl.text))));
     } else {
       setState(() {
         print('not validated');

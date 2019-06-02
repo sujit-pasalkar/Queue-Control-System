@@ -4,14 +4,18 @@ import 'package:queue_control/SharedPref/SharedPref.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 
-// import 'package:image_picker/image_picker.dart';
 var uuid = new Uuid();
 
 class Chat extends StatefulWidget {
   final int servicePhone;
-  final String serviceName;
-  Chat({@required this.servicePhone, this.serviceName});
+  final String serviceName, userPhone, sender;
+  Chat(
+      {@required this.servicePhone,
+      this.serviceName,
+      this.userPhone,
+      @required this.sender});
 
   @override
   _ChatState createState() => _ChatState();
@@ -26,10 +30,17 @@ class _ChatState extends State<Chat> {
   final ScrollController listScrollController = new ScrollController();
 
   List<dynamic> listMessage;
+  String userP;
 
   @override
   void initState() {
     isLoading = false;
+    print(
+        'in chatpage :${widget.servicePhone}, ${widget.serviceName} , ${widget.userPhone}');
+    if (widget.userPhone == null) //
+      userP = pref.phone;
+    else
+      userP = widget.userPhone;
 
     super.initState();
   }
@@ -64,17 +75,18 @@ class _ChatState extends State<Chat> {
       child: StreamBuilder<QuerySnapshot>(
         stream: Firestore.instance
             .collection('chats')
-            .document(widget.servicePhone.toString() + "~" + pref.phone)
-            .collection(widget.servicePhone.toString() + "~" + pref.phone)
-            // .orderBy('timestamp', descending: true)
+            .document(widget.servicePhone.toString() + "~" + userP)
+            .collection(widget.servicePhone.toString() + "~" + userP)
+            .orderBy('timestamp', descending: true)
             // .limit(12)
             .snapshots(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) return Text('Error: ${snapshot.error}');
           if (!snapshot.hasData) {
             return Center(
                 child: CircularProgressIndicator(
                     valueColor:
-                        new AlwaysStoppedAnimation<Color>(Color(0xffb00bae3))));
+                        new AlwaysStoppedAnimation<Color>(Colors.indigo[900])));
           } else {
             listMessage = snapshot.data.documents;
 
@@ -97,11 +109,13 @@ class _ChatState extends State<Chat> {
   }
 
   Widget buildItem(int index, DocumentSnapshot document) {
+    print("in........................... :" + document['sender']);
     if (document['sender'] == 'user') {
+      // print("in :" + document['sender']);
       // Right (my message)
       return Stack(
         children: <Widget>[
-          Row(children: <Widget>[
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
             Container(
               child: new Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +129,8 @@ class _ChatState extends State<Chat> {
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold)),
                       ),
-                      Text(document['timestamp'].toString()),
+                      Text(DateFormat('dd MMM kk:mm')
+                          .format(document['timestamp'])),
                     ],
                   ),
                   new Container(
@@ -136,7 +151,7 @@ class _ChatState extends State<Chat> {
                 bottom: isLastMessageRight(index) ? 20.0 : 10.0,
               ),
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(8.0),
               ),
               // ),
@@ -147,19 +162,52 @@ class _ChatState extends State<Chat> {
       );
     } else {
       // Left (peer message)
+      print("in services :" + document['sender']);
       return Container(
           child: Column(children: <Widget>[
-        Row(children: <Widget>[
-          Expanded(
-            child: Text(document['senderName'],
-                style: new TextStyle(
-                    fontSize: 12.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold)),
-          ),
-          Text(document['timestamp']),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,          
+          children: <Widget>[
+          Container(
+            child: new Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(document['senderName'],
+                          style: new TextStyle(
+                              fontSize: 12.0,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    Text(DateFormat('dd MMM kk:mm')
+                        .format(document['timestamp'])),
+                  ],
+                ),
+                new Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: Text(
+                    document['msg'],
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
+            width: 200.0,
+            decoration: BoxDecoration(
+                color: Colors.indigo[100],
+                borderRadius: BorderRadius.circular(8.0)),
+            margin: EdgeInsets.only(
+                bottom: isLastMessageRight(index) ? 15.0 : 10.0, left: 5.0),
+          )
         ])
       ]));
+      //
     }
   }
 
@@ -178,57 +226,6 @@ class _ChatState extends State<Chat> {
     return Container(
       child: Column(
         children: <Widget>[
-          // !isSearching
-          //     ? Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //         children: <Widget>[
-          //           Material(
-          //             child: new Container(
-          //               margin: new EdgeInsets.symmetric(horizontal: 1.0),
-          //               child: new IconButton(
-          //                 icon: new Icon(Icons.image),
-          //                 onPressed: getGalleryImage,
-          //                 color: primaryColor,
-          //               ),
-          //             ),
-          //             color: Colors.white,
-          //           ),
-          //           Material(
-          //             child: new Container(
-          //               margin: new EdgeInsets.symmetric(horizontal: 1.0),
-          //               child: new IconButton(
-          //                 icon: new Icon(Icons.video_library),
-          //                 onPressed: getGalleryVideo,
-          //                 color: primaryColor,
-          //               ),
-          //             ),
-          //             color: Colors.white,
-          //           ),
-          //           Material(
-          //             child: new Container(
-          //               margin: new EdgeInsets.symmetric(horizontal: 1.0),
-          //               child: new IconButton(
-          //                 icon: new Icon(Icons.photo_camera),
-          //                 onPressed: getCameraImage,
-          //                 color: primaryColor,
-          //               ),
-          //             ),
-          //             color: Colors.white,
-          //           ),
-          //           Material(
-          //             child: new Container(
-          //               margin: new EdgeInsets.symmetric(horizontal: 1.0),
-          //               child: new IconButton(
-          //                 icon: new Icon(Icons.videocam),
-          //                 onPressed: getCameraVideo,
-          //                 color: primaryColor,
-          //               ),
-          //             ),
-          //             color: Colors.white,
-          //           ),
-          //         ],
-          //       )
-          //     : Text(''),
           Row(
             children: <Widget>[
               Padding(
@@ -237,13 +234,10 @@ class _ChatState extends State<Chat> {
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(50.0)),
                   padding: EdgeInsets.all(15.0),
-                  child:
-                      // GestureDetector(
-                      // child:
-                      TextField(
+                  child: TextField(
                     textCapitalization: TextCapitalization.sentences,
                     cursorColor: Color(0xffb00bae3),
                     style: TextStyle(fontSize: 15.0),
@@ -252,7 +246,6 @@ class _ChatState extends State<Chat> {
                       hintText: 'Type your message...',
                       hintStyle: TextStyle(color: Colors.grey),
                     ),
-                    // focusNode: focusNode,
                     onChanged: (input) {
                       print(input.length);
                       // if (input.length >= 1) {
@@ -272,13 +265,12 @@ class _ChatState extends State<Chat> {
                     //   searchOperation('a');
                     // },
                   ),
-                  // )
                 ),
               ),
               // Button send message
               Container(
                 decoration: BoxDecoration(
-                    color: Color(0xffb00bae3),
+                    color: Colors.indigo[900],
                     borderRadius: BorderRadius.circular(50.0)),
                 margin: new EdgeInsets.symmetric(horizontal: 8.0),
                 child: new IconButton(
@@ -308,47 +300,55 @@ class _ChatState extends State<Chat> {
   }
 
   void onTextMessage(String content, int type) async {
-    setState(() {
-      textSending = true;
-    });
-    // var result = await http.get('http://oyeyaaroapi.plmlogix.com/time');
-    // var res = jsonDecode(result.body);
-    // timestamp = res['timestamp'];
+    print('in onText');
+    try {
+      setState(() {
+        textSending = true;
+      });
 
-    if (content.trim() != '') {
-      textEditingController.clear();
-      String uuid = Uuid().v1();
-      var documentReference = Firestore.instance
-          .collection('chats')
-          .document(widget.servicePhone.toString() + "~" + pref.phone)
-          .collection(widget.servicePhone.toString() + "~" + pref.phone)
-          .document(uuid);
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction.set(
-          documentReference,
-          {
-            'senderPhone': pref.phone,
-            'sender': 'user',
-            // 'senderId': this.myId,
-            // 'idTo': widget.peerId,
-            'timestamp': FieldValue.serverTimestamp(),
-            'msg': content,
-            'type': type,
-            // 'members': groupMembersArr,
-            'senderName': pref.name
-            // 'groupName': widget.name
-          },
-        );
-      }).then((onValue) {
-        print('$content sent');
+      if (content.trim() != '') {
+        textEditingController.clear();
+        String uuid = Uuid().v1();
+        var documentReference = Firestore.instance
+            .collection('chats')
+            .document(widget.servicePhone.toString() + "~" + userP)
+            .collection(widget.servicePhone.toString() + "~" + userP)
+            .document(uuid);
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.set(
+            documentReference,
+            {
+              'senderPhone':
+                  widget.userPhone == null ? pref.phone : widget.servicePhone,
+              'sender': widget.sender,
+              // 'senderId': this.myId,
+              // 'idTo': widget.peerId,
+              'timestamp': FieldValue.serverTimestamp(),
+              'msg': content,
+              'type': type,
+              // 'members': groupMembersArr,
+              'senderName': widget.sender == 'user' ?widget.userPhone  :widget.serviceName
+              // pref.name == '' ? widget.userPhone  : pref.name .
+              // widget.userPhone == null ? pref.name : widget.serviceName
+              // 'groupName': widget.name
+            },
+          );
+        }).then((onValue) {
+          print('$content sent');
+          setState(() {
+            textSending = false;
+          });
+        });
+        listScrollController.animateTo(0.0,
+            duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+      } else {
+        Fluttertoast.showToast(msg: 'Nothing to send');
         setState(() {
           textSending = false;
         });
-      });
-      listScrollController.animateTo(0.0,
-          duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-    } else {
-      Fluttertoast.showToast(msg: 'Nothing to send');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Error while sending');
       setState(() {
         textSending = false;
       });

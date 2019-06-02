@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:queue_control/SharedPref/SharedPref.dart';
-import '../Home/dummyHome.dart';
 import '../Verification/verification.dart';
 import 'package:queue_control/VendorForm/form.dart';
 
@@ -18,9 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   String smsCode;
   String verificationId;
   bool userVerified = false;
-  //# make loading var = flase
   bool loading = false;
-  //#new
   String loadingMsg = "";
   bool verifybtn;
 
@@ -206,20 +203,30 @@ class _LoginPageState extends State<LoginPage> {
     pref.setLoginType(loginType);
     var result = vrf.getUserDoc();
     print('register success:$result');
-    // Navigator.of(context).pushReplacementNamed('/dummyHome');
     Navigator.of(context)
         .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
-    // Navigator.pushReplacement(
-    //           context,
-    //           MaterialPageRoute(
-    //             builder: (context) => DummyHome(),
-    //           ),
-    //         );
   }
 
   signIn(smscode, String loginType) async {
     print('in sign in..$verificationId / $smsCode');
     try {
+      FirebaseAuth.instance
+          .signInWithPhoneNumber(
+              verificationId: verificationId, smsCode: smscode)
+          .then((user) {
+        print('auth user is ---- > $user');
+        this.register(loginType);
+      }, onError: (e) {
+        print('incorrect otp :$e');
+        final snackBar = SnackBar(
+          content: Text('Incorrect OTP'),
+        );
+        _scaffoldKey.currentState.showSnackBar(snackBar);
+        setState(() {
+          this.loading = false;
+        });
+      });
+
       // FirebaseAuth.instance
       //     .signInWithPhoneNumber(
       //         verificationId: verificationId, smsCode: smsCode)
@@ -239,16 +246,16 @@ class _LoginPageState extends State<LoginPage> {
       // });
 
 // .signInWithPhoneNumber() not support solution
-      final AuthCredential credential = PhoneAuthProvider.getCredential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
-      final FirebaseUser user =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      final FirebaseUser currentUser =
-          await FirebaseAuth.instance.currentUser();
-      assert(user.uid == currentUser.uid);
-      print('done..$user');
+      //   final AuthCredential credential = PhoneAuthProvider.getCredential(
+      //     verificationId: verificationId,
+      //     smsCode: smsCode,
+      //   );
+      //   final FirebaseUser user =
+      //       await FirebaseAuth.instance.signInWithCredential(credential);
+      //   final FirebaseUser currentUser =
+      //       await FirebaseAuth.instance.currentUser();
+      //   assert(user.uid == currentUser.uid);
+      //   print('done..$user');
     } catch (e) {
       //no use
       final snackBar = SnackBar(
@@ -286,20 +293,19 @@ class _LoginPageState extends State<LoginPage> {
     return new Scaffold(
       key: _scaffoldKey,
       appBar: new AppBar(
-          title: new Text('Verify Your Mobile Number'), centerTitle: false,
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.person,color:Colors.white ),
-              onPressed: (){
-                print('admin');
-                Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  FormPage()));
-              },
-            )
-          ],),
+        title: new Text('Verify Your Mobile Number'),
+        centerTitle: false,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.person, color: Colors.white),
+            onPressed: () {
+              print('admin');
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => FormPage()));
+            },
+          )
+        ],
+      ),
       resizeToAvoidBottomPadding: true,
       body: body(),
     );

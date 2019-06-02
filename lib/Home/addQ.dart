@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uuid/uuid_util.dart';
 import 'package:queue_control/SharedPref/SharedPref.dart';
 import 'package:queue_control/Profile/profilePage.dart';
 import 'package:queue_control/Chat/chatPage.dart';
@@ -28,7 +27,6 @@ class _AddQState extends State<AddQ> {
   int timePerService;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -55,255 +53,279 @@ class _AddQState extends State<AddQ> {
             case ConnectionState.waiting:
               return new CircularProgressIndicator();
             default:
-              return //Text('${snapshot.data.data}');
-                  !loading
-                      ? new Column(
-                          // crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Container(
-                                height: 200,
-                                width: width,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                        snapshot.data.data['imageurl']),
-                                  ),
-                                  border: Border.all(color: Colors.black),
-                                  // borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                // child: Image.network(snapshot.data.data['imageUrl']),
-                                child: Stack(children: <Widget>[
-                                  Positioned(
-                                    bottom: 0.0,
-                                    left: 0.0,
-                                    right: 0.0,
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(8, 0, 8, 0),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.bottomCenter,
-                                            end: Alignment.topCenter,
-                                            colors: <Color>[
-                                              Colors.black.withOpacity(0.60),
-                                              Colors.black.withOpacity(0.35),
-                                            ],
+              return !loading
+                  ? new Column(
+                      children: <Widget>[
+                        Container(
+                            height: 200,
+                            width: width,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: NetworkImage(
+                                    snapshot.data.data['imageurl']),
+                              ),
+                              border: Border.all(color: Colors.black),
+                              // borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            // child: Image.network(snapshot.data.data['imageUrl']),
+                            child: Stack(children: <Widget>[
+                              Positioned(
+                                bottom: 0.0,
+                                left: 0.0,
+                                right: 0.0,
+                                child: Container(
+                                    padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: <Color>[
+                                          Colors.black.withOpacity(0.60),
+                                          Colors.black.withOpacity(0.35),
+                                        ],
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        Text(
+                                          '${snapshot.data.data['address']}',
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            decorationStyle:
+                                                TextDecorationStyle.solid,
+                                            decoration: TextDecoration.none,
+                                            fontSize: 18.0,
                                           ),
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: <Widget>[
-                                            Text(
-                                              '${snapshot.data.data['address']}',
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                decorationStyle:
-                                                    TextDecorationStyle.solid,
-                                                decoration: TextDecoration.none,
-                                                fontSize: 18.0,
-                                              ),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.chat,
-                                                color: Colors.white,
-                                              ),
-                                              iconSize: 30,
-                                              onPressed: () {
-                                                print(snapshot
-                                                    .data.data['phone'].runtimeType);
-
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) => Chat(
-                                                            servicePhone:snapshot.data.data['phone'],
-                                                            serviceName: widget.serviceName)));
-                                              },
-                                            )
-                                          ],
-                                        )),
-                                  )
-                                ])),
-                            Expanded(
-                              child: ListView(
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.chat,
+                                            color: Colors.white,
+                                          ),
+                                          iconSize: 30,
+                                          onPressed: () {
+                                            print(pref.phone);
+                                            startChat(snapshot);
+                                          },
+                                        )
+                                      ],
+                                    )),
+                              )
+                            ])),
+                        Expanded(
+                          child: ListView(
+                            children: <Widget>[
+                              Row(
                                 children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        flex: 4,
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          child: Text(
-                                            'Contact',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Contact',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                            child: Text(
-                                          '${snapshot.data.data['phone']}',
-                                          style: TextStyle(fontSize: 18),
-                                        )),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                  Divider(),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        flex: 4,
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          child: Text(
-                                            'Email',
-                                            style: TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                            child: Text(
-                                          '${snapshot.data.data['email']}',
-                                          style: TextStyle(fontSize: 18),
-                                        )),
-                                      ),
-                                    ],
-                                  ),
-                                  Divider(),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        flex: 4,
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          child: Text(
-                                            'Opening Time',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                            child: Text(
-                                          '${snapshot.data.data['open']}',
-                                          style: TextStyle(fontSize: 18),
-                                        )),
-                                      ),
-                                    ],
-                                  ),
-                                  Divider(),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        flex: 4,
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          child: Text(
-                                            'Closing Time',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                            child: Text(
-                                          '${snapshot.data.data['close']}',
-                                          style: TextStyle(fontSize: 18),
-                                        )),
-                                      ),
-                                    ],
-                                  ),
-                                  Divider(),
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        flex: 4,
-                                        child: Container(
-                                          padding: EdgeInsets.all(5),
-                                          child: Text(
-                                            'Number Of People in Queue',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                            child: Text(
-                                          '${snapshot.data.data['queuelength']}',
-                                          style: TextStyle(fontSize: 18),
-                                        )),
-                                      ),
-                                    ],
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: Text(
+                                      '${snapshot.data.data['phone']}',
+                                      style: TextStyle(fontSize: 18),
+                                    )),
                                   ),
                                 ],
                               ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              child: SizedBox(
-                                height: 50.0,
-                                width: width,
-                                child: RaisedButton(
-                                  color: Colors.indigo[800],
-                                  child: Text(
-                                    'Get Token',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 18),
+                              Divider(),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Email',
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      loading = true;
-                                    });
-
-                                    timePerService =
-                                        snapshot.data.data['timeperservice'];
-
-                                    //check user profile first if complete..
-                                    checkUserProfile();
-                                    // addInService();
-                                    //else tell user to complete profile first
-                                  },
-                                ),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: Text(
+                                      '${snapshot.data.data['email']}',
+                                      style: TextStyle(fontSize: 18),
+                                    )),
+                                  ),
+                                ],
                               ),
-                            )
-                          ],
+                              Divider(),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Opening Time',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: Text(
+                                      '${snapshot.data.data['open']}',
+                                      style: TextStyle(fontSize: 18),
+                                    )),
+                                  ),
+                                ],
+                              ),
+                              Divider(),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Closing Time',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: Text(
+                                      '${snapshot.data.data['close']}',
+                                      style: TextStyle(fontSize: 18),
+                                    )),
+                                  ),
+                                ],
+                              ),
+                              Divider(),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Number Of People in Queue',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: Text(
+                                      '${snapshot.data.data['queuelength']}',
+                                      style: TextStyle(fontSize: 18),
+                                    )),
+                                  ),
+                                ],
+                              ),
+                              Divider(),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(
+                                        'Average Waiting Time Of Queue',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 6,
+                                    child: Container(
+                                        child: totalWait(
+                                            snapshot.data.data['queuelength'],
+                                            snapshot
+                                                .data.data['timeperservice'])),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          child: SizedBox(
+                            height: 50.0,
+                            width: width,
+                            child: RaisedButton(
+                              color: Colors.indigo[800],
+                              child: Text(
+                                'Get Token',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  loading = true;
+                                });
+
+                                timePerService =
+                                    snapshot.data.data['timeperservice'];
+
+                                //check user profile first if complete..
+                                checkUserProfile();
+                                // addInService();
+                                //else tell user to complete profile first
+                              },
+                            ),
+                          ),
                         )
-                      : Center(
-                          child: CircularProgressIndicator(),
-                        );
+                      ],
+                    )
+                  : Center(
+                      child: CircularProgressIndicator(),
+                    );
           }
         },
       ),
     );
   }
 
+  Widget totalWait(len, timePer) {
+    print(len.runtimeType);
+    print(timePer.runtimeType);
+    int totWait = len * timePer;
+
+    return Text(
+      '${totWait.toString()} Minutes',
+      style: TextStyle(fontSize: 18),
+    );
+  }
+
   addInService() async {
     try {
       String uuid = Uuid().v1();
-      print(
-          'get token: $uuid  and type: ${widget.servicetype} name : ${widget.serviceName}');
 
 //in service name
       var documentReference = Firestore.instance
@@ -314,7 +336,9 @@ class _AddQState extends State<AddQ> {
           .collection('tokens')
           .document(uuid);
 
-      print('docref set');
+      // print('docref set');
+      // dynamic d = FieldValue.serverTimestamp().toString();
+      // print('d type: ${d}');
 
       Firestore.instance.runTransaction((transaction) async {
         await transaction.set(
@@ -324,16 +348,10 @@ class _AddQState extends State<AddQ> {
             'username': pref.name,
             'address': pref.address,
             'phone': pref.phone,
-            'time': FieldValue.serverTimestamp(),
+            'time': FieldValue.serverTimestamp()
           },
         );
       }).then((onValue) async {
-        print('added');
-        final snackBar = SnackBar(
-            content: Text("Token added in Queue"),
-            backgroundColor: Colors.green);
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-
         //increment count
         var docRef = await Firestore.instance
             .collection('services')
@@ -344,11 +362,9 @@ class _AddQState extends State<AddQ> {
         var queueLen = 0;
 
         await docRef.get().then((onValue) async {
-          print(onValue.data['queuelength']);
+          // print(onValue.data['queuelength']);
           queueLen = onValue.data['queuelength'];
         });
-
-        print(queueLen);
 
         Firestore.instance.runTransaction((transaction) async {
           await transaction.update(
@@ -383,6 +399,11 @@ class _AddQState extends State<AddQ> {
         setState(() {
           this.loading = false;
         });
+        // print('added');
+        final snackBar = SnackBar(
+            content: Text("Token added in Queue"),
+            backgroundColor: Colors.green);
+        _scaffoldKey.currentState.showSnackBar(snackBar);
       });
     } catch (e) {
       print('Got Err : $e');
@@ -405,11 +426,36 @@ class _AddQState extends State<AddQ> {
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => ProfilePage()));
-      // addInService();
-
+      // addInService()
     } else {
       print('user profile updated');
       addInService();
+    }
+  }
+
+  startChat(snapshot) {
+    print(pref.name);
+    print('user profile: ${pref.name}, ${pref.address}');
+    if ((pref.name == '' || pref.address == '') ||
+        (pref.name == null || pref.address == null)) {
+      print('usre not profile updated');
+      final snackBar = SnackBar(
+          content: Text("Update Your Profile Fisrt!"),
+          backgroundColor: Colors.red);
+      _scaffoldKey.currentState.showSnackBar(snackBar);
+
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => ProfilePage()));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Chat(
+                    servicePhone: snapshot.data.data['phone'],
+                    serviceName: widget.serviceName,
+                    userPhone: pref.phone,
+                    sender: 'user',
+                  )));
     }
   }
 }
