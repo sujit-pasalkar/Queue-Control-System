@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../SharedPref/SharedPref.dart';
 import 'package:queue_control/Chat/chatPage.dart';
 import 'package:intl/intl.dart';
 
@@ -22,19 +21,19 @@ class AdminQ extends StatefulWidget {
 class _AdminQState extends State<AdminQ> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool loading = false;
-  var now;
+  DateTime now;
 
   @override
   void initState() {
-    print('${widget.servicetype}, ${widget.serviceName} , ${widget.phone}');
+    print('${widget.servicetype},${widget.serviceName},${widget.phone}');
     getDate();
     super.initState();
   }
 
   getDate() {
     now = new DateTime.now();
-    print(now);
-    print(DateTime.parse(now.toString()));
+    // print(now);
+    // print(DateTime.parse(now.toString()));
   }
 
   @override
@@ -85,7 +84,7 @@ class _AdminQState extends State<AdminQ> {
                                 iconSize: 40,
                                 onPressed: () {
                                   deleteToken(
-                                      document['uuid']);
+                                      document['uuid'], document['phone']);
                                 },
                               ),
                             ),
@@ -130,15 +129,14 @@ class _AdminQState extends State<AdminQ> {
                                         document['averageWaitingTime']))),
                                 trailing: now.isAfter(calcTime(document['time'],
                                         document['averageWaitingTime']))
-                                    ? RaisedButton(
+                                    ? Text('Token Expired')
+                                    : RaisedButton(
                                         onPressed: () {
-                                          callFunction(document['phone'],widget.serviceName);
+                                          callFunction(document['phone'],
+                                              widget.serviceName);
                                         },
                                         child: Text('notify'),
-                                      )
-
-                                    // Text('token expired')
-                                    : Text('token expired')),
+                                      )),
                           ],
                         ),
                       );
@@ -150,7 +148,7 @@ class _AdminQState extends State<AdminQ> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        'No Status Found Yet.',
+                        'No Queue Found Yet.',
                         style:
                             TextStyle(fontSize: 20, color: Colors.indigo[900]),
                       ),
@@ -160,15 +158,15 @@ class _AdminQState extends State<AdminQ> {
     );
   }
 
-  callFunction(phone,service) async{
-  //  dynamic res= await CloudFunctions.instance.call(
-  //     functionName: 'helloWorld',
-  //     // parameters: <String, dynamic>{
-  //     //   'param1': 'this is just a test',
-  //     //   'param2': 'hi there',
-  //     // },
-  //   );
-  //   print('call function response:${res}');
+  callFunction(phone, service) async {
+    //  dynamic res= await CloudFunctions.instance.call(
+    //     functionName: 'helloWorld',
+    //     // parameters: <String, dynamic>{
+    //     //   'param1': 'this is just a test',
+    //     //   'param2': 'hi there',
+    //     // },
+    //   );
+    //   print('call function response:${res}');
 
     // CloudFunctions.instance.call(
     //                 functionName: "addUser",
@@ -180,27 +178,28 @@ class _AdminQState extends State<AdminQ> {
 
     // add notify msg to firestore
     var documentReference = Firestore.instance
-          .collection('notify')
-          .document(DateTime.now().millisecondsSinceEpoch.toString());
+        .collection('notify')
+        .document(DateTime.now().millisecondsSinceEpoch.toString());
 
-           Firestore.instance.runTransaction((transaction) async {
-        await transaction.//update(documentReference, {'phone': phone, 'service': service},);
-        set(
-          documentReference,
-          {'phone': phone, 'service': service},
-        );
-      }).then((onValue){
-        print('send notification :$phone , $service');
-      });
-
+    Firestore.instance.runTransaction((transaction) async {
+      await transaction
+          . //update(documentReference, {'phone': phone, 'service': service},);
+          set(
+        documentReference,
+        {'phone': phone, 'service': service},
+      );
+    }).then((onValue) {
+      print('send notification :$phone , $service');
+    });
   }
 
-  dynamic calcTime(time, waitTime) {
-    dynamic addedT = time.add(new Duration(minutes: 50));
+  DateTime calcTime(DateTime time, int waitTime) {
+    print('waitTime:${waitTime}');
+    DateTime addedT = time.add(new Duration(minutes: waitTime));
     return addedT;
   }
 
-  deleteToken(uuid) async {
+  deleteToken(uuid, userPhone) async {
     //delete from service
     var docRefServ = await Firestore.instance
         .collection('services')
@@ -220,7 +219,7 @@ class _AdminQState extends State<AdminQ> {
           .document(widget.servicetype)
           .collection(widget.servicetype)
           .document(widget.serviceName);
-      var queueLen; // = 0;
+      int queueLen = 0;
 
       await docRef.get().then((onValue) async {
         print(onValue.data['queuelength']);
@@ -229,13 +228,41 @@ class _AdminQState extends State<AdminQ> {
 
       print(queueLen);
 
+      // count
+      if (queueLen < 0) {
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.update(
+            docRef,
+            {
+              'queuelength': 0,
+            },
+          );
+        });
+      } else {
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.update(
+            docRef,
+            {
+              'queuelength': queueLen - 1,
+            },
+          );
+        });
+      }
+
+      // delete from user
+      var docRefUser = await Firestore.instance
+          .collection('users')
+          .document(userPhone.toString())
+          .collection('tokens')
+          .document(uuid);
       Firestore.instance.runTransaction((transaction) async {
-        await transaction.update(
-          docRef,
-          {
-            'queuelength': queueLen - 1,
-          },
-        );
+        await transaction.delete(docRefUser);
+      }).then((onValue) {
+        print('deleted token');
+        final snackBar = SnackBar(
+            content: Text('Appointment token deleted'),
+            backgroundColor: Colors.green);
+        _scaffoldKey.currentState.showSnackBar(snackBar);
       });
     });
   }

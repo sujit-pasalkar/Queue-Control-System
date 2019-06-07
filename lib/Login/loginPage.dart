@@ -155,46 +155,6 @@ class _LoginPageState extends State<LoginPage> {
             ],
           );
         });
-
-// #BottomSheet
-    // showModalBottomSheet(
-    //     context: context,
-    //     // barrierDismissible: false,
-    //     builder: (builder) {
-    //       return new Container(
-    //         height: 600.0,
-    //         color: Colors.blue[50],
-    //         child: Column(children: <Widget>[
-    //           TextField(
-    //             decoration: InputDecoration(
-    //               labelText: 'Enter OTP',
-    //             ),
-    //             keyboardType: TextInputType.number,
-    //             autofocus: true,
-    //             onChanged: (value) {
-    //               this.smsCode = value;
-    //             },
-    //           ),
-    //          Padding(padding: EdgeInsets.all(10.0)) ,
-    //          new RaisedButton(
-    //             child: Text('Done'),
-    //             color: Colors.blue,
-    //             onPressed: () {
-    //               FirebaseAuth.instance.currentUser().then((user) {
-    //                 if (user != null) {
-    //                   print('user:${user}');
-    //                   Navigator.of(context).pop();
-    //                   Navigator.of(context)
-    //                       .pushReplacementNamed('/profilepage');
-    //                 } else {
-    //                   Navigator.of(context).pop();
-    //                   print("pop");
-    //                   // signIn();
-    //                 }
-    //               });})
-    //         ]),
-    //       );
-    //     });
   }
 
   Future<void> register(String loginType) async {
@@ -226,38 +186,7 @@ class _LoginPageState extends State<LoginPage> {
           this.loading = false;
         });
       });
-
-      // FirebaseAuth.instance
-      //     .signInWithPhoneNumber(
-      //         verificationId: verificationId, smsCode: smsCode)
-      //     .then((user) {
-      //   print("signed User : $user");
-      //   this.register(loginType);
-      // }, onError: (e) {
-      //   print('....$e');
-      //   setState(() {
-      //     this.loading = false;
-      //   });
-      //   final snackBar = SnackBar(
-      //     content: Text("The sms verification code is invalid."),
-      //   );
-      //   _scaffoldKey.currentState.showSnackBar(snackBar);
-      //   Navigator.of(context).pop();
-      // });
-
-// .signInWithPhoneNumber() not support solution
-      //   final AuthCredential credential = PhoneAuthProvider.getCredential(
-      //     verificationId: verificationId,
-      //     smsCode: smsCode,
-      //   );
-      //   final FirebaseUser user =
-      //       await FirebaseAuth.instance.signInWithCredential(credential);
-      //   final FirebaseUser currentUser =
-      //       await FirebaseAuth.instance.currentUser();
-      //   assert(user.uid == currentUser.uid);
-      //   print('done..$user');
     } catch (e) {
-      //no use
       final snackBar = SnackBar(
         content: Text("$e"),
       );

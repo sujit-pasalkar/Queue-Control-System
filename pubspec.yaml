@@ -36,6 +36,8 @@ dependencies:
   firebase_messaging: ^2.1.0
   image_picker: ^0.4.10
   # simple_permissions: ^0.1.9
+  google_maps_flutter: ^0.5.15+1
+  location: ^1.4.1
 
 dev_dependencies:
   flutter_test:

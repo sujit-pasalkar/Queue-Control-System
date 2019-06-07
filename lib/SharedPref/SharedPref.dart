@@ -8,6 +8,11 @@ class SharedPref {
   String email;
   String loginType;
   String address;
+  int currentIndex =0;
+  // bool getLocation = false;
+  Map<String, double> userLocation;
+
+
 
   // SharedPref() {}
 

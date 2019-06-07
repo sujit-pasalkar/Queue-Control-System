@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Home/addQ.dart';
 
@@ -20,7 +18,9 @@ class _SelectPageState extends State<SelectPage> {
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
-  initState() {}
+  initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,23 +78,30 @@ class _SelectPageState extends State<SelectPage> {
 
   getServices(AsyncSnapshot<QuerySnapshot> snapshot, context) {
     return snapshot.data.documents
-        .map(
-          (doc) => GestureDetector(
-              onTap: () {
-                print(doc.data);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AddQ(
-                            serviceName: doc.documentID,
-                            servicetype: widget.selectName)));
-              },
-              child: ListTile(
-                leading: CircleAvatar(child: Text(doc.documentID[0].toUpperCase()),),
-                title: Text(doc.documentID,style: TextStyle(fontSize: 20),),
-                subtitle: Text(doc.data['address'],style: TextStyle(fontSize: 16),),
-              )
-              ))
+        .map((doc) => GestureDetector(
+            onTap: () {
+              print(doc.documentID);
+              print(widget.selectName);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddQ(
+                          serviceName: doc.documentID,
+                          servicetype: widget.selectName)));
+            },
+            child: ListTile(
+              leading: CircleAvatar(
+                child: Text(doc.documentID[0].toUpperCase()),
+              ),
+              title: Text(
+                doc.documentID,
+                style: TextStyle(fontSize: 20),
+              ),
+              subtitle: Text(
+                doc.data['address'],
+                style: TextStyle(fontSize: 16),
+              ),
+            )))
         .toList();
   }
 }

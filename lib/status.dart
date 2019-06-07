@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'Review/review.dart';
 import 'SharedPref/SharedPref.dart';
 import 'package:intl/intl.dart';
 
@@ -13,7 +14,9 @@ class Status extends StatefulWidget {
 }
 
 class _StatusState extends State<Status> {
-  var now;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  DateTime now;
   @override
   void initState() {
     getDate();
@@ -21,17 +24,16 @@ class _StatusState extends State<Status> {
   }
 
   getDate() {
-     now = new DateTime.now();
-     print(now);
-     print(DateTime.parse(now.toString()));
+    now = new DateTime.now();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: Text(
-            'Status',
+            'Your Appointment Status',
           ),
         ),
         body: new StreamBuilder<QuerySnapshot>(
@@ -39,6 +41,7 @@ class _StatusState extends State<Status> {
                 .collection("users")
                 .document(pref.phone)
                 .collection('tokens')
+                .orderBy('time')
                 .snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -48,56 +51,79 @@ class _StatusState extends State<Status> {
                   ? ListView(
                       children: snapshot.data.documents
                           .map((DocumentSnapshot document) {
-                        return new Card(
-                          child: Column(
-                            children: <Widget>[
-                              ListTile(
-                                title: new Text(
-                                    "${document['serviceType'][0].toUpperCase()}${document['serviceType'].substring(1)}"),
-                                subtitle: new Text(document['servicename']),
-                                trailing: IconButton(
-                                  icon: Icon(Icons.delete),
-                                  color: Colors.indigo[900],
-                                  iconSize: 40,
-                                  onPressed: () {
-                                    deleteToken(
-                                        document['serviceType'],
-                                        document['servicename'],
-                                        document['uuid']);
-                                  },
-                                ),
+                            return new Card(
+                              child: Column(
+                                children: <Widget>[
+                                  ListTile(
+                                      title: new Text(
+                                          "${document['serviceType'][0].toUpperCase()}${document['serviceType'].substring(1)}"),
+                                      subtitle:
+                                          new Text(document['servicename']),
+                                      trailing: RaisedButton(
+                                        color: Colors.indigo[900],
+                                        child: Text(
+                                          'Cancel',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          deleteToken(
+                                              document['serviceType'],
+                                              document['servicename'],
+                                              document['uuid']);
+                                        },
+                                      )),
+                                  ListTile(
+                                      title: new Text('Booking Time'),
+                                      subtitle: Text(DateFormat('dd MMM kk:mm')
+                                          .format(document['time'])),
+                                      trailing: now.isAfter(calcTime(
+                                              document['time'],
+                                              document['averageWaitingTime']))
+                                          ? RaisedButton(
+                                              color: Colors.indigo,
+                                              child: Text(
+                                                'Add Review',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                              onPressed: () {
+                                                // document
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Review(
+                                                                document:
+                                                                    document)));
+                                              },
+                                            )
+                                          : Text('')),
+                                  ListTile(
+                                    title: new Text('Average Waiting Time'),
+                                    subtitle: new Text(
+                                        document['averageWaitingTime']
+                                                .toString() +
+                                            " Minutes"),
+                                  ),
+                                  ListTile(
+                                      title: new Text('Your Timing'),
+                                      subtitle: Text(DateFormat('dd MMM kk:mm')
+                                          .format(calcTime(document['time'],
+                                              document['averageWaitingTime']))),
+                                      trailing: now.isAfter(calcTime(
+                                              document['time'],
+                                              document['averageWaitingTime']))
+                                          ? Text('Token Expired')
+                                          : Text('')),
+                                ],
                               ),
-                              ListTile(
-                                title: new Text('Booked At'),
-                                subtitle: Text(DateFormat('dd MMM kk:mm')
-                                    .format(document['time'])),
-                                // new Text(document['time'].toString()),
-                                // trailing: now.isAfter(document['time'])
-                              ),
-                              ListTile(
-                                title: new Text('Average Waiting Time'),
-                                subtitle: new Text(
-                                    document['averageWaitingTime'].toString() +
-                                        " Minutes"),
-                              ),
-                               ListTile(
-                                title: new Text('Your Timing'),
-                                subtitle: 
-                                Text(DateFormat('dd MMM kk:mm')
-                                    .format(calcTime(document['time'],document['averageWaitingTime']))),
-
-                                trailing: now.isAfter(calcTime(document['time'],document['averageWaitingTime']))
-                                ?
-                                Text('token expired')
-                                :
-                                Text('')
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          })
+                          .toList()
+                          .reversed
+                          .toList()
                       // ),
-                    )
+                      )
                   : Center(
                       child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -112,22 +138,9 @@ class _StatusState extends State<Status> {
             }));
   }
 
-  dynamic calcTime(time,waitTime){
-
-    dynamic addedT =time.add(new Duration(minutes: 50));
-    print('time: $time');
-    print('added time :$addedT');
-
-    // var  a =now.di
-    // difference(time).inDays;
-    print('diff  : ${now.isAfter(time)}');
-    // print('diff  : ${now.isAfter(time)}');
+  DateTime calcTime(DateTime time, int waitTime) {
+    DateTime addedT = time.add(new Duration(minutes: waitTime));
     return addedT;
-    // Text(DateFormat('dd MMM kk:mm:ss').format(addedT));
-  }
-
-  Widget expire(time,waitTime){
-
   }
 
   deleteToken(type, name, uuid) async {
@@ -150,35 +163,54 @@ class _StatusState extends State<Status> {
           .document(type)
           .collection(type)
           .document(name);
-      var queueLen; // = 0;
+      int queueLen = 0;
 
       await docRef.get().then((onValue) async {
         print(onValue.data['queuelength']);
         queueLen = onValue.data['queuelength'];
       });
 
-      print(queueLen);
+      print('queueLen :$queueLen');
 
+      if (queueLen < 0) {
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.update(
+            docRef,
+            {
+              'queuelength': 0,
+            },
+          );
+        });
+      } else {
+        Firestore.instance.runTransaction((transaction) async {
+          await transaction.update(
+            docRef,
+            {
+              'queuelength': queueLen - 1,
+            },
+          );
+        });
+      }
+
+      //delete from user
+      var docRefUser = await Firestore.instance
+          .collection('users')
+          .document(pref.phone)
+          .collection('tokens')
+          .document(uuid);
       Firestore.instance.runTransaction((transaction) async {
-        await transaction.update(
-          docRef,
-          {
-            'queuelength': queueLen - 1,
-          },
-        );
+        await transaction.delete(docRefUser);
+      }).then((onValue) {
+        print('deleted token');
+        final snackBar = SnackBar(
+            content: Text('Appointment token deleted'),
+            backgroundColor: Colors.green);
+        _scaffoldKey.currentState.showSnackBar(snackBar);
       });
-    });
-
-    //delete from user
-    var docRefUser = await Firestore.instance
-        .collection('users')
-        .document(pref.phone)
-        .collection('tokens')
-        .document(uuid);
-    Firestore.instance.runTransaction((transaction) async {
-      await transaction.delete(docRefUser);
-    }).then((onValue) {
-      print('deleted token');
+    }).catchError((onError) {
+      final snackBar =
+          SnackBar(content: Text(onError), backgroundColor: Colors.red);
+      _scaffoldKey.currentState.showSnackBar(snackBar);
     });
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:queue_control/Review/showReview.dart';
+import 'package:queue_control/Select/advancedOptions.dart';
 import 'package:uuid/uuid.dart';
 import 'package:queue_control/SharedPref/SharedPref.dart';
 import 'package:queue_control/Profile/profilePage.dart';
@@ -37,7 +39,18 @@ class _AddQState extends State<AddQ> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text('${widget.serviceName.toUpperCase()}'),
-        actions: <Widget>[],
+        actions: <Widget>[
+          FlatButton(
+            child: Text('See Reviews',style: TextStyle(color:Colors.white),),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ShowReview(
+                    serviceName:widget.serviceName,
+                    servicetype:widget.servicetype
+                  )));
+            },
+          )
+        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: Firestore.instance
@@ -237,8 +250,30 @@ class _AddQState extends State<AddQ> {
                                   ),
                                   Expanded(
                                     flex: 6,
-                                    child: Container(
-                                        child: Text(
+                                    child:
+                                        //  StreamBuilder<DocumentSnapshot>(
+                                        //   stream: Firestore.instance
+                                        //       .collection('services')
+                                        //       .document('${widget.servicetype}')
+                                        //       .collection('${widget.servicetype}')
+                                        //       .document('${widget.serviceName}')
+                                        //       .snapshots(),
+                                        //   builder: (BuildContext context,
+                                        //       AsyncSnapshot<DocumentSnapshot>
+                                        //           snapshot) {
+                                        //     if (snapshot.hasError)
+                                        //       return new Text(
+                                        //           'Error: ${snapshot.error}');
+                                        //     switch (snapshot.connectionState) {
+                                        //       case ConnectionState.waiting:
+                                        //         return new CircularProgressIndicator();
+                                        //       default:
+                                        //         return Text('value');
+                                        //     }
+                                        //   },
+                                        // )
+                                        Container(
+                                            child: Text(
                                       '${snapshot.data.data['queuelength']}',
                                       style: TextStyle(fontSize: 18),
                                     )),
@@ -274,31 +309,27 @@ class _AddQState extends State<AddQ> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.all(20),
-                          child: SizedBox(
-                            height: 50.0,
-                            width: width,
-                            child: RaisedButton(
-                              color: Colors.indigo[800],
-                              child: Text(
-                                'Get Token',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 18),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  loading = true;
-                                });
-
-                                timePerService =
-                                    snapshot.data.data['timeperservice'];
-
-                                //check user profile first if complete..
-                                checkUserProfile();
-                                // addInService();
-                                //else tell user to complete profile first
-                              },
+                          width: double.infinity,
+                          color: Colors.indigo[800],
+                          child: FlatButton(
+                            child: Text(
+                              'Continue',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 18),
                             ),
+                            onPressed: () {
+                              setState(() {
+                                loading = true;
+                              });
+
+                              timePerService =
+                                  snapshot.data.data['timeperservice'];
+
+                              //check user profile first if complete..
+                              checkUserProfile();
+                              // addInService();
+                              //else tell user to complete profile first
+                            },
                           ),
                         )
                       ],
@@ -324,96 +355,106 @@ class _AddQState extends State<AddQ> {
   }
 
   addInService() async {
-    try {
-      String uuid = Uuid().v1();
+    print('${widget.servicetype}');
+    // if (widget.servicetype == 'bank') {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AdvancedOptions(
+                serviceName: widget.serviceName,
+                servicetype: widget.servicetype,
+                timePerService: timePerService)));
+    // } else if (widget.servicetype == 'clinic') {
+    //   print('in..${widget.servicetype}');
+    // }
 
-//in service name
-      var documentReference = Firestore.instance
-          .collection('services')
-          .document(widget.servicetype)
-          .collection(widget.servicetype)
-          .document(widget.serviceName)
-          .collection('tokens')
-          .document(uuid);
+//     try {
+//       String uuid = Uuid().v1();
 
-      // print('docref set');
-      // dynamic d = FieldValue.serverTimestamp().toString();
-      // print('d type: ${d}');
+// //in service name
+//       var documentReference = Firestore.instance
+//           .collection('services')
+//           .document(widget.servicetype)
+//           .collection(widget.servicetype)
+//           .document(widget.serviceName)
+//           .collection('tokens')
+//           .document(uuid);
 
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction.set(
-          documentReference,
-          {
-            'uuid': uuid,
-            'username': pref.name,
-            'address': pref.address,
-            'phone': pref.phone,
-            'time': FieldValue.serverTimestamp()
-          },
-        );
-      }).then((onValue) async {
-        //increment count
-        var docRef = await Firestore.instance
-            .collection('services')
-            .document(widget.servicetype)
-            .collection(widget.servicetype)
-            .document(widget.serviceName);
+//       // print('docref set');
+//       // dynamic d = FieldValue.serverTimestamp().toString();
+//       // print('d type: ${d}');
 
-        var queueLen = 0;
+//       Firestore.instance.runTransaction((transaction) async {
+//         await transaction.set(
+//           documentReference,
+//           {
+//             'uuid': uuid,
+//             'username': pref.name,
+//             'address': pref.address,
+//             'phone': pref.phone,
+//             'time': FieldValue.serverTimestamp()
+//           },
+//         );
+//       }).then((onValue) async {
+//         //increment count
+//         var docRef = await Firestore.instance
+//             .collection('services')
+//             .document(widget.servicetype)
+//             .collection(widget.servicetype)
+//             .document(widget.serviceName);
 
-        await docRef.get().then((onValue) async {
-          // print(onValue.data['queuelength']);
-          queueLen = onValue.data['queuelength'];
-        });
+//         var queueLen = 0;
 
-        Firestore.instance.runTransaction((transaction) async {
-          await transaction.update(
-            docRef,
-            {
-              'queuelength': queueLen + 1,
-            },
-          );
-        });
+//         await docRef.get().then((onValue) async {
+//           // print(onValue.data['queuelength']);
+//           queueLen = onValue.data['queuelength'];
+//         });
 
-        //in user side
-        var userDocRef = Firestore.instance
-            .collection('users')
-            .document(pref.phone)
-            .collection('tokens')
-            .document(uuid);
+//         Firestore.instance.runTransaction((transaction) async {
+//           await transaction.update(
+//             docRef,
+//             {
+//               'queuelength': queueLen + 1,
+//             },
+//           );
+//         });
 
-        Firestore.instance.runTransaction((transaction) async {
-          await transaction.set(
-            userDocRef,
-            {
-              'uuid': uuid,
-              'serviceType': widget.servicetype,
-              'servicename': widget.serviceName,
-              // 'phone': pref.phone,
-              'time': FieldValue.serverTimestamp(),
-              'averageWaitingTime': queueLen * timePerService
-            },
-          );
-        }).then((onValue) async {});
+//         //in user side
+//         var userDocRef = Firestore.instance
+//             .collection('users')
+//             .document(pref.phone)
+//             .collection('tokens')
+//             .document(uuid);
 
-        setState(() {
-          this.loading = false;
-        });
-        // print('added');
-        final snackBar = SnackBar(
-            content: Text("Token added in Queue"),
-            backgroundColor: Colors.green);
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-      });
-    } catch (e) {
-      print('Got Err : $e');
-    }
+//         Firestore.instance.runTransaction((transaction) async {
+//           await transaction.set(
+//             userDocRef,
+//             {
+//               'uuid': uuid,
+//               'serviceType': widget.servicetype,
+//               'servicename': widget.serviceName,
+//               // 'phone': pref.phone,
+//               'time': FieldValue.serverTimestamp(),
+//               'averageWaitingTime': queueLen * timePerService
+//             },
+//           );
+//         }).then((onValue) async {});
+
+//         setState(() {
+//           this.loading = false;
+//         });
+//         // print('added');
+//         final snackBar = SnackBar(
+//             content: Text("Token added in Queue"),
+//             backgroundColor: Colors.green);
+//         _scaffoldKey.currentState.showSnackBar(snackBar);
+//       });
+//     } catch (e) {
+//       print('Got Err : $e');
+//     }
   }
 
   checkUserProfile() async {
-    setState(() {
-      this.loading = false;
-    });
     print('user profile: ${pref.name}, ${pref.address}');
     if ((pref.name == '' || pref.address == '') ||
         (pref.name == null || pref.address == null)) {
@@ -426,8 +467,13 @@ class _AddQState extends State<AddQ> {
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => ProfilePage()));
-      // addInService()
+      setState(() {
+        this.loading = false;
+      });
     } else {
+      setState(() {
+        this.loading = false;
+      });
       print('user profile updated');
       addInService();
     }

@@ -84,3 +84,14 @@ exports.notify = functions.firestore
     return admin.messaging().sendToDevice(tokens, payload)
 
   });
+
+
+  tasks:
+  1.dont show - numbers on select page
+  2.chat problem
+  3.expire token to notify
+  4.when u delete token from service make sure delete from user as well
+
+  1.on home page show map
+  2.show button to show nearby-->show ur list
+  3.in show ur count

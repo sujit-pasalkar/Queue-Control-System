@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:queue_control/Map/map.dart';
 import '../Select/select.dart';
 import '../SharedPref/SharedPref.dart';
-// import '../Home/dummyHome.dart';
+
+import 'package:location/location.dart';
 
 class HomePage extends StatefulWidget {
   final ScrollController hideButtonController;
@@ -21,17 +23,17 @@ class Choice {
 }
 
 class _HomePageState extends State<HomePage> {
+  var location = new Location();
+
   List<Choice> choices = const <Choice>[
-    // const Choice(
-    //     title: 'Settings', icon: Icons.settings), //#nav to next(settings page)
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
-    // const Choice(title: 'Profile', icon: Icons.person),
   ];
   var listMessage;
 
   @override
   initState() {
-    
+   
+    super.initState();
   }
 
   //new
@@ -91,11 +93,25 @@ class _HomePageState extends State<HomePage> {
                       horizontal: 16.0, vertical: 8.0),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  SelectPage(selectName: doc.documentID.toString())));
+                      print(doc.documentID.toString());
+
+                      _getLocation().then((value) {
+                        setState(() {
+                          pref.userLocation = value;
+                        });
+                          print(
+                              'userloaction:${pref.userLocation['latitude']},${pref.userLocation['longitude']}');
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) => SelectPage(
+                          //             selectName: doc.documentID.toString())));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      GMap(docId: doc.documentID.toString())));
+                      });
                     },
                     child: Container(
                       height: 115.0,
@@ -115,8 +131,18 @@ class _HomePageState extends State<HomePage> {
         .toList();
   }
 
+  Future<Map<String, double>> _getLocation() async {
+    var currentLocation = <String, double>{};
+    try {
+      currentLocation = await location.getLocation();
+    } catch (e) {
+      currentLocation = null;
+    }
+    return currentLocation;
+  }
+
   //# after view functions
-  logout() async{
+  logout() async {
     FirebaseAuth.instance.signOut().then((action) {
       // clearSharedPref();
       pref.clearUser();
@@ -125,10 +151,6 @@ class _HomePageState extends State<HomePage> {
       print("*err:*" + e);
     });
   }
-
-  // profile(){
-
-  // }
 
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
@@ -157,8 +179,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               Text(doc.documentID.toString().toUpperCase(),
-                  style: TextStyle(color: Colors.white, fontSize: 20)
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 20)),
               Text('Tap to open nearby',
                   style: TextStyle(color: Colors.white, fontSize: 15)),
               Row(
@@ -167,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                     Icons.list,
                     color: Colors.white,
                   ),
-                  Text('1',//${doc.documentID.length}
+                  Text('2', //${doc.documentID.length}
                       style: TextStyle(color: Colors.white, fontSize: 15))
                 ],
               )

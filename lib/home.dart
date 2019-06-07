@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:queue_control/Home/homePage.dart';
 import 'package:queue_control/status.dart';
 import 'SharedPref/SharedPref.dart';
+// import 'Map/map.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,7 +16,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   ScrollController hideButtonController;
   bool isBottomBarVisible;
-  int currentIndex;
 
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
@@ -27,7 +27,7 @@ class _HomeState extends State<Home> {
     super.initState();
     getUserProfile();
 
-    currentIndex = 0;
+    // currentIndex = 0;
     isBottomBarVisible = true;
     hideButtonController = new ScrollController();
     hideButtonController.addListener(() {
@@ -96,14 +96,31 @@ class _HomeState extends State<Home> {
       height: isBottomBarVisible ? 60.0 : 0.0,
       child: isBottomBarVisible
           ? BottomNavigationBar(
-              currentIndex: currentIndex,
+              currentIndex: pref.currentIndex,
               type: BottomNavigationBarType.shifting,
               onTap: (int index) {
                 setState(() {
-                  currentIndex = index;
+                  pref.currentIndex = index;
                 });
               },
               items: <BottomNavigationBarItem>[
+                // BottomNavigationBarItem(
+                //   backgroundColor: Colors.indigo[900],
+                //   icon: Icon(
+                //     Icons.map,
+                //     color: Colors.grey,
+                //   ),
+                //   activeIcon: Icon(
+                //     Icons.map,
+                //     color: Colors.white,
+                //     size: 40.0,
+                //   ),
+                //   title: SizedBox(
+                //     height: 0.0,
+                //     width: 0.0,
+                //   ),
+                // ),
+
                 BottomNavigationBarItem(
                   backgroundColor: Colors.indigo[900],
                   icon: Icon(
@@ -123,11 +140,11 @@ class _HomeState extends State<Home> {
                 BottomNavigationBarItem(
                   backgroundColor: Colors.indigo[900],
                   icon: Icon(
-                    Icons.star,
+                    Icons.assignment,
                     color: Colors.grey,
                   ),
                   activeIcon: Icon(
-                    Icons.star,
+                    Icons.assignment,
                     color: Colors.white,
                     size: 40.0,
                   ),
@@ -146,7 +163,14 @@ class _HomeState extends State<Home> {
   }
 
   buildBody() {
-    switch (currentIndex) {
+    switch (pref.currentIndex) {
+      // case 0:
+      //   return GMap(
+      //     hideButtonController: hideButtonController,
+      //     key: homeKey,
+      //   );
+      //   break;
+
       case 0:
         return HomePage(
           hideButtonController: hideButtonController,
